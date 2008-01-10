@@ -1,0 +1,97 @@
+package com.flaptor.util;
+
+import java.io.Serializable;
+
+/**
+    This class represents a triad of objects.
+    It's useful when you need to make clear that the number of
+    objects you're storing is exactly 3.
+    One or both objects can be null.
+*/
+public final class Triad<T1, T2, T3> implements Serializable, Comparable<Triad<? extends Comparable<T1>, ? extends Comparable<T2>, ? extends Comparable<T3>>>{
+    private T1 fst;
+    private T2 scnd;
+    private T3 thrd;
+    
+    /**
+    Constructor.
+     */
+    public Triad(final T1 first, final T2 second, final T3 third) {
+        this.fst = first;
+        this.scnd = second;
+        this.thrd = third;
+    }
+
+    public T1 first() {
+        return fst;
+    }
+
+    public T2 second() {
+        return scnd;
+    }
+
+    public T3 third() {
+        return thrd;
+    }
+
+    public void setFirst(T1 first) {
+        this.fst = first;
+    }
+
+    public void setSecond(T2 second) {
+        this.scnd = second;
+    }
+
+    public void setThird(T3 third) {
+        this.thrd = third;
+    }
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("(")
+            .append(fst)
+            .append(" ; ")
+            .append(scnd)
+            .append(" ; ")
+            .append(thrd)
+            .append(")");
+        return buf.toString();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (! o.getClass().equals(this.getClass())) return false;
+        Triad<T1,T2,T3> obj = (Triad<T1,T2,T3>)o;
+        if (fst == null) {
+            if (obj.fst != null) return false; 
+        } else {
+            if (!fst.equals(obj.fst)) return false;
+        }
+        if (scnd == null) {
+            if (obj.scnd != null) return false; 
+        } else {
+            if (!scnd.equals(obj.scnd)) return false;
+        }
+        if (thrd == null) {
+            if (obj.thrd != null) return false; 
+        } else {
+            if (!thrd.equals(obj.thrd)) return false;
+        }
+        return true;
+    }
+ 
+    /**
+     * compares the first element and if it equal, compares the second and if equal, compares the third
+     */
+	public int compareTo(Triad<? extends Comparable<T1>, ? extends Comparable<T2>, ? extends Comparable<T3>> o) {
+		int ret = -o.fst.compareTo(fst);
+		if (ret != 0) return ret;
+		else {
+			ret = -o.scnd.compareTo(scnd);
+			if (ret != 0) return ret;
+			else return -o.thrd.compareTo(thrd);
+		}
+	}
+}
+
