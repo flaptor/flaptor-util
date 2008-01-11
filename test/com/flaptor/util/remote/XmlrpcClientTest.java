@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 
+import com.flaptor.util.Execute;
 import com.flaptor.util.IOUtil;
 import com.flaptor.util.Pair;
 import com.flaptor.util.TestCase;
@@ -26,22 +26,26 @@ public class XmlrpcClientTest extends TestCase{
         server.addHandler(null, new ServiceImpl());
         server.start();
         url = new URL("http://localhost:"+port);
-        client = new XmlrpcClient(url);	
+        client = new XmlrpcClient(url);
     }
 
     protected void tearDown() throws Exception {
         server.requestStop();
+        while (!server.isStopped()) {
+            Execute.sleep(20);
+        }
     }
 
     @TestInfo(testType = TestInfo.TestType.UNIT,
             requiresPort = {port})
-            public void testSimple() throws XmlRpcException, IOException {
+    public void testSimple() throws XmlRpcException, IOException {
         assertEquals(1, new XmlRpcClient(url).execute("simpleMethod", new Vector()));
         assertEquals(client.execute(null, "simpleMethod", new Object[]{}), 1);
         Object o = XmlrpcClient.proxy(null, Service.class, client);
         assertTrue(o instanceof Service);
         Service s = (Service)o;
         assertEquals(s.simpleMethod(), 1);
+        
     }
 
     @TestInfo(testType = TestInfo.TestType.UNIT,

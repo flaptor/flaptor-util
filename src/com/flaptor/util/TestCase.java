@@ -272,12 +272,10 @@ public class TestCase extends junit.framework.TestCase {
             testResult.addError(this, t);
         }
     }
-    /**
-     * Override to run the test and assert its state.
-     * @throws Throwable if any exception is thrown
-     */
+    
+    
     @Override
-    protected void runTest() throws Throwable {
+    public void runBare() throws Throwable {
         assertNotNull("TestCase.fName cannot be null", fName); // Some VMs crash when calling getMethod(null,null);
         Method runMethod= null;
         try {
@@ -289,30 +287,40 @@ public class TestCase extends junit.framework.TestCase {
         } catch (NoSuchMethodException e) {
             fail("Method \""+fName+"\" not found");
         }
-        if (!Modifier.isPublic(runMethod.getModifiers())) {
-            fail("Method \""+fName+"\" should be public");
-        }
-
         TestInfo info = runMethod.getAnnotation(TestInfo.class);
+
         if (hasToRun(info)) {
+            //This fragment of code is the original (super.runBare)
+            Throwable exception= null;
+            setUp();
             try {
-                runMethod.invoke(this);
-            } catch (InvocationTargetException e) {
-                e.fillInStackTrace();
-                throw e.getTargetException();
-            } catch (IllegalAccessException e) {
-                e.fillInStackTrace();
-                throw e;
+                runTest();
+            } catch (Throwable running) {
+                exception= running;
             }
-            checkCleanExit(info);
-        }
+            finally {
+                try {
+                    tearDown();
+                } catch (Throwable tearingDown) {
+                    if (exception == null) exception= tearingDown;
+                }
+            }
+            //This part is also new
+            try {
+                checkCleanExit(info);
+            } catch (Throwable checkingExit) {
+                exception = checkingExit;
+            }
+            
+            if (exception != null) throw exception;
+        }    
     }
+    
     
     private void checkCleanExit(TestInfo info) {
         if (null == info) return;
         if (isSomePortInUse(info.requiresPort())) {
-            System.out.println("This test did not clean up some of it ports.");
-            fail();
+            fail("This test did not clean up some of it ports.");
         }
     }
     
@@ -348,7 +356,7 @@ public class TestCase extends junit.framework.TestCase {
             try {
                 s = new ServerSocket(p);
             } catch (IOException e) {
-                System.out.println("Socket " + p + " is in use. " + e);
+                System.out.println("Port " + p + " is in use. " + e);
                 return true;
             } finally {
                 Execute.close(s);
@@ -372,6 +380,7 @@ public class TestCase extends junit.framework.TestCase {
     @Override
     public void setName(String name) {
         fName= name;
+        super.setName(name);
     }
 
     /**

@@ -22,6 +22,9 @@ public class XmlrpcServerTest extends TestCase
 
     protected void tearDown(){
     	srv.srv.requestStop();
+        while (!srv.srv.isStopped()) {
+            Execute.sleep(20);
+        }
     	srv = null;
     	snd = null;
     }

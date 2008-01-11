@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 
+import com.flaptor.util.Execute;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
 
@@ -37,11 +38,15 @@ public class RmiServerTest extends TestCase
 
     public void tearDown(){
         localEchoService = null;
+        server.requestStop();
+        while (!server.isStopped()) {
+            Execute.sleep(20);
+        }
+        Execute.sleep(15000);
         server = null;
     }
 
-    @TestInfo(testType = TestInfo.TestType.UNIT,
-            requiresPort = {PORT})
+    @TestInfo(testType = TestInfo.TestType.UNIT)
     public void testTransmission(){
         logger.debug("Testing ascii characters");
         StringBuffer buf = new StringBuffer();

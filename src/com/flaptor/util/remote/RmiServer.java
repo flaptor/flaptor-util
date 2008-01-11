@@ -10,9 +10,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.mortbay.jetty.handler.AbstractHandler;
-import org.mortbay.jetty.handler.ContextHandler;
-import org.mortbay.jetty.handler.HandlerWrapper;
 
 import com.flaptor.util.FileUtil;
 
@@ -78,10 +75,11 @@ public class RmiServer extends AServer {
 	 * @throws IllegalStateException if the server has been requested to stop or is stopped 
 	 */
 	synchronized public void addHandler(String context, Remote handler) {
-		if (stopRequested) throw new IllegalStateException("Server has already been signaled to stop, cannot add handler");
-
+        if (RunningState.STOPPING == runningState || RunningState.STOPPED == runningState) {
+            throw new IllegalStateException("Server has already been signaled to stop, cannot add handler");
+        }
 		handlers.put(context, handler);
-		if (started) registerHandler(context, handler);
+		if (RunningState.RUNNING == runningState) registerHandler(context, handler);
 	}
     
     /**
@@ -128,11 +126,6 @@ public class RmiServer extends AServer {
 	@Override
 	protected Map<String, Remote> getHandlers() {
 		return handlers;
-	}
-
-	@Override
-	synchronized protected boolean isStoppedServer() {
-		return stopRequested;
 	}
 
 	@Override

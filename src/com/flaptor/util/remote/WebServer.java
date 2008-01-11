@@ -18,6 +18,7 @@ import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 
 import com.flaptor.util.FileUtil;
+import com.flaptor.util.remote.AServer.RunningState;
 
 /**
  * A WebServer to manage a single jetty AbstractHandler.
@@ -124,7 +125,9 @@ public class WebServer extends AServer {
 	}
 
 	synchronized private void registerHandler(String context, AbstractHandler handler) {
-		if (stopRequested) throw new IllegalStateException("Server has already been signaled to stop, cannot add handler");
+        if (RunningState.STOPPING == runningState || RunningState.STOPPED == runningState) {
+            throw new IllegalStateException("Server has already been signaled to stop, cannot add handler");
+        }
 		webserver.addHandler(handler);
 		handlers.put(context, handler);
 	}
@@ -149,11 +152,6 @@ public class WebServer extends AServer {
 	@Override
 	protected Map<String, AbstractHandler> getHandlers() {
 		return handlers;
-	}
-
-	@Override
-	protected boolean isStoppedServer() {
-		return webserver.isStopped();
 	}
 
 	@Override

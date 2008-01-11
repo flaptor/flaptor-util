@@ -36,9 +36,6 @@ public class AServerTest extends TestCase {
 		protected Map<String, ? extends Object> getHandlers() {
 			return new HashMap<String, Object>();
 		}
-		protected boolean isStoppedServer() {
-			return stopRequested;
-		}
 		protected void requestStopServer() {
 		}
     }
