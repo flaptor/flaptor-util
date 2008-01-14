@@ -149,6 +149,7 @@ public class RmiServer extends AServer {
 		for (Map.Entry<String, Remote> entry : handlers.entrySet()) {
 			RmiUtil.unregisterLocalService(port, entry.getKey());
 		}
+        RmiUtil.unregisterRegistry(port);
 	}
 }
 

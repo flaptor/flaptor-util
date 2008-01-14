@@ -61,7 +61,7 @@ public final class RmiUtil {
             problem = e;
         }
         if (problem != null) {
-            LOGGER.warn("Couldn't get remote service " +serviceName+ " at server " +server+ ", port " +port+ ": " +problem);
+            LOGGER.warn("Couldn't get remote service " +serviceName+ " at server " +server+ ", port " +port+ ": " +problem,problem);
         }
         return null;
     }
@@ -79,6 +79,8 @@ public final class RmiUtil {
             if (null == registry) {
                 registry = LocateRegistry.createRegistry(port);
                 localRegistries.put(port,registry);
+            } else {
+                LOGGER.debug("There was a local registry on port " + port);
             }
             try {registry.unbind(serviceName);} catch (Exception e) {LOGGER.debug("Problem unbinding service "+serviceName+" from RMI registry");}
             registry.rebind(serviceName,UnicastRemoteObject.exportObject(service,0));
@@ -107,6 +109,8 @@ public final class RmiUtil {
                 Remote service = registry.lookup(serviceName);
                 registry.unbind(serviceName);
                 try { UnicastRemoteObject.unexportObject(service,true); } catch (NoSuchObjectException e) { /* good */ }
+            } else {
+                throw new IllegalArgumentException("There is no registry running on port " + port);
             }
             return true;
         } catch (Exception e) {
@@ -115,5 +119,20 @@ public final class RmiUtil {
         }
     }
 
+
+    public static synchronized void unregisterRegistry(int port) {
+    
+        Registry registry = localRegistries.get(port);
+        if (null == registry) {
+            throw new IllegalArgumentException("There is no registry on port " + port);
+        }
+
+        try { 
+            UnicastRemoteObject.unexportObject(registry,true); // que devuelve ?
+            localRegistries.remove(port);
+        } catch (Exception e ) {
+            throw new IllegalStateException(e);
+        }
+    }
 }
 

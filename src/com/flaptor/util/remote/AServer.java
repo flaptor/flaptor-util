@@ -160,13 +160,5 @@ public abstract class AServer implements Stoppable {
             }
             stopped = true;
         }
-        private boolean canStop() {
-            for (Map.Entry<String, ? extends Object> entry : getHandlers().entrySet()) {
-                Object handler = entry.getValue();
-                if (!(handler instanceof Stoppable)) return false;
-                if (!((Stoppable)handler).isStopped()) return false;
-            }
-            return true;
-        }
     }
 }

@@ -42,11 +42,12 @@ public class RmiServerTest extends TestCase
         while (!server.isStopped()) {
             Execute.sleep(20);
         }
-        Execute.sleep(15000);
+        Execute.sleep(5000);
         server = null;
     }
 
-    @TestInfo(testType = TestInfo.TestType.UNIT)
+    @TestInfo(testType = TestInfo.TestType.UNIT,
+                requiresPort = {PORT})
     public void testTransmission(){
         logger.debug("Testing ascii characters");
         StringBuffer buf = new StringBuffer();
@@ -68,6 +69,19 @@ public class RmiServerTest extends TestCase
         strings(buf.toString());
 
     }
+
+    @TestInfo(testType = TestInfo.TestType.UNIT,
+                requiresPort = {PORT})
+    public void testOpenCloseOpenClose() {
+        tearDown();
+        for (int i = 0; i < 2 ; i++) {
+            setUp();
+            testTransmission();
+            tearDown();
+        }
+        setUp();
+    }
+
 
     private void strings(String original){
         logger.debug("Original String: " + original);
