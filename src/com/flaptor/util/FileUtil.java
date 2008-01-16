@@ -143,6 +143,26 @@ public final class FileUtil {
     }
 
 
+    /**
+     * Gets the size of a file or directory, in bytes.
+     * This method is needed because the File.length() 
+     * method is not defined for directories.
+     * @param spec the file or directory whose size is requested.
+     * @return the size of the file or directory.
+     */
+    public static long sizeOf(File spec) {
+        long size = 0;
+        if (spec.isDirectory()) {
+            String[] children = spec.list();
+            for (int i=0; i<children.length; i++) {
+                size += sizeOf(new File(spec, children[i]));
+            }
+        } else {
+            size = spec.length();
+        }
+        return size;
+    }
+
 
     /**
      * @see fileToSet(String,String,Set<String>,Logger) 
