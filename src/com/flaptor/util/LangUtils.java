@@ -1,7 +1,6 @@
 package com.flaptor.util;
 
 import org.apache.nutch.analysis.lang.LanguageIdentifier;
-import org.apache.nutch.util.NutchConfiguration;
 
 /**
  * Utility class for language identifying (a wrapper for nutch's language identifiers)
@@ -10,7 +9,7 @@ import org.apache.nutch.util.NutchConfiguration;
  */
 public class LangUtils {
 
-	private static LanguageIdentifier languageIdentifier = new LanguageIdentifier(NutchConfiguration.create());
+	private static LanguageIdentifier languageIdentifier = LanguageIdentifier.getInstance();
 
     public static String identify(String text) {
     	return languageIdentifier.identify(text.toLowerCase());
