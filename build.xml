@@ -121,13 +121,28 @@ limitations under the License.
 				<!-- include name="common.properties" />
 				<include name="*.properties.defaults" / -->
 			</fileset>
-			<zipgroupfileset dir="${lib.dir}">
-				 <include name="*.jar" />
-			</zipgroupfileset>
 		</jar>
     </target>
 
+    <target name="fatjar" depends="compile" description="builds the util jar file" >
+        <jar jarfile="${output.dir}/${project}-${version}.jar" >
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Version" value="${version}"/>
+            </manifest>
 
+            <fileset dir="${build.dir}" excludes="**/*Test.class">
+                <include name="com/flaptor/**/*.class"/>
+            </fileset>
+            <fileset dir="${conf.dir}" >
+                <!-- include name="common.properties" />
+                <include name="*.properties.defaults" / -->
+            </fileset>
+            <zipgroupfileset dir="${lib.dir}">
+                 <include name="*.jar" />
+            </zipgroupfileset>
+        </jar>
+    </target>
     <!--******************************************************************************************************-->
     <target name="doc" description="creates the util javadoc" >
         <delete dir="${javadoc.dir}" />
