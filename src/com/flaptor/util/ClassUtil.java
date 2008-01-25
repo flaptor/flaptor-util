@@ -18,6 +18,7 @@ package com.flaptor.util;
 
 /**
  * class related utils 
+ * @author Martin Massera
  */
 public class ClassUtil {
 	

@@ -36,6 +36,8 @@ import com.flaptor.util.FileUtil;
 /**
  * This class implements a generic server that listens on a port for xmlrpc
  * indexing requests and forwards them to a handler object.
+ * 
+ * @author Martin Massera
  */
 public class XmlrpcServer extends AServer {
 

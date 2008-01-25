@@ -21,6 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Utility methods for webapps
+ * 
+ * @author Martin Massera
  */ 
 public class WebAppUtil {
 	

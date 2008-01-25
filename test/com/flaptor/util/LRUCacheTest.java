@@ -1,5 +1,8 @@
 package com.flaptor.util;
 
+/**
+ * Tests for {@link LRUCache}
+ */
 public class LRUCacheTest extends TestCase {
 	private LRUCache<String, String> cache;
 

@@ -2,6 +2,11 @@ package com.flaptor.util;
 
 import junit.framework.TestCase;
 
+/**
+ * Tests for {@link Triad}
+ * 
+ * @author Martin Massera
+ */
 public class TriadTest extends TestCase
 {
     @TestInfo(testType = TestInfo.TestType.UNIT)

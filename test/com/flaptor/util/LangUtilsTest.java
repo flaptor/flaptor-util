@@ -1,5 +1,10 @@
 package com.flaptor.util;
 
+/**
+ * tests for {@link LangUtils}
+ * 
+ * @author Martin Massera
+ */
 public class LangUtilsTest extends TestCase{
 	
     @TestInfo (testType = TestInfo.TestType.UNIT)

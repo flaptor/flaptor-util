@@ -1,5 +1,8 @@
 package com.flaptor.util;
 
+/**
+ * Tests for {@link TimeoutLRUCache}
+ */
 public class TimeoutLRUCacheTest extends TestCase {
 	private TimeoutLRUCache<String, String> cache;
 

@@ -1,5 +1,8 @@
 package com.flaptor.util;
 
+/**
+ * Tests for {@link QueueTest}
+ */
 public class QueueTest extends TestCase
 {
 

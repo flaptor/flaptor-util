@@ -31,6 +31,8 @@ import java.util.concurrent.Callable;
  * execution can be "forgotten" 
  * 
  * @param <T> the type of the results
+ * 
+ * @author Martin Massera
  */
 public class Execution<T> {
     

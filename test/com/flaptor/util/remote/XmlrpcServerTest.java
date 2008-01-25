@@ -8,6 +8,11 @@ import com.flaptor.util.Execute;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
 
+/**
+ * Tests for {@link XmlrpcServer}
+ * 
+ * @author Martin Massera
+ */
 public class XmlrpcServerTest extends TestCase
 {
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());

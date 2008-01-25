@@ -18,6 +18,8 @@ package com.flaptor.util;
 
 /**
  * utilities for getting ports 
+ * 
+ * @author Martin Massera
  */
 public class PortUtil {
 	

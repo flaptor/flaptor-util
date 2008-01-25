@@ -38,6 +38,8 @@ import com.flaptor.util.remote.AServer.RunningState;
 
 /**
  * A WebServer to manage a single jetty AbstractHandler.
+ * 
+ * @author Martin Massera
  */
 public class WebServer extends AServer {
 

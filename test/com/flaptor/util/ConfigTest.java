@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Tests for {@link Config}
+ */
 public class ConfigTest extends TestCase {
 
     private final String configName = "configTest.tmp";

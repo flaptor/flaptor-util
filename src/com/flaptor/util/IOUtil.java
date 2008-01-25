@@ -28,6 +28,8 @@ import java.io.Reader;
 
 /**
  * utility class for common IO operations
+ * 
+ * @author Martin Massera
  */
 public class IOUtil {
 

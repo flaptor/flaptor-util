@@ -15,6 +15,13 @@ import com.flaptor.util.Pair;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
 
+/**
+ * Tests for {@link XmlrpcClient} calls and proxy
+ * Also tests for {@link XmlrpcSerialization}
+ * 
+ * @author Martin Massera
+ *
+ */
 public class XmlrpcClientTest extends TestCase{
     private XmlrpcServer server;
     private XmlrpcClient client;

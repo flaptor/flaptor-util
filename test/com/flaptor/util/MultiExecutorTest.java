@@ -4,6 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+/**
+ * Tests for {@link MultiExecutor}
+ * 
+ * @author Martin Massera
+ */
 public class MultiExecutorTest extends TestCase{
     
     Integer num = new Integer(0);

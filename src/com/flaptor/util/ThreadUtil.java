@@ -23,6 +23,8 @@ import org.apache.log4j.Logger;
 
 /**
  * utility class for thread related stuff
+ * 
+ * @author Martin Massera
  */
 public class ThreadUtil {
 

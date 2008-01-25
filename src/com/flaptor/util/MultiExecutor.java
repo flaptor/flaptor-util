@@ -27,6 +27,8 @@ import java.util.Queue;
  * objects of the Execution class  
  *
  * @param <T> the type of the result of the tasks
+ * 
+ * @author Martin Massera
  */
 public class MultiExecutor<T> {
 

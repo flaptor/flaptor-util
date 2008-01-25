@@ -23,7 +23,9 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 
 /**
- * Utilities for tar files 
+ * Utilities for tar files
+ * 
+ * @author Martin Massera 
  */
 public class TarUtil {
     private static Logger logger = Logger.getLogger(Execute.whoAmI());

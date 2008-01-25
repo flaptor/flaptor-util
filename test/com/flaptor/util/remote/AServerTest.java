@@ -6,6 +6,9 @@ import java.util.Map;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
 
+/**
+ * Tests for {@link AServer}
+ */
 public class AServerTest extends TestCase {
     
     @TestInfo(testType = TestInfo.TestType.UNIT)

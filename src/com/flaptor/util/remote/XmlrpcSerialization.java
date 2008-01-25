@@ -44,6 +44,7 @@ import com.flaptor.util.Triad;
  * if an object is not supported in xml-rpc, it is serialized transmitted
  * as byte[] and deserialized on the other end
  * 
+ * @author Martin Massera
  */
 public class XmlrpcSerialization {
 

@@ -1,5 +1,8 @@
 package com.flaptor.util;
 
+/**
+ * Tests for {@link NetUtil}
+ */
 public class NetUtilTest extends TestCase {
 	public void setUp() {
 	}

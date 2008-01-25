@@ -26,6 +26,8 @@ import com.flaptor.hist4j.AdaptiveHistogram;
 
 /**
  * class for keeping statistics of events
+ * 
+ * @author Martin Massera
  */
 public class Statistics {
 	private static Statistics instance = new Statistics(60000);

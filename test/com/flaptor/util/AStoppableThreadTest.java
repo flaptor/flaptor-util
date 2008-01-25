@@ -1,5 +1,7 @@
 package com.flaptor.util;
-
+/**
+ * Tests for {@link AStoppableThread}
+ */
 public class AStoppableThreadTest extends TestCase {
     class TestThread extends AStoppableThread {
         public volatile int state = 0;

@@ -19,11 +19,13 @@ package com.flaptor.util;
 import java.io.Serializable;
 
 /**
-    This class represents a triad of objects.
-    It's useful when you need to make clear that the number of
-    objects you're storing is exactly 3.
-    One or both objects can be null.
-*/
+ *  This class represents a triad of objects.
+ *  It's useful when you need to make clear that the number of
+ *  objects you're storing is exactly 3.
+ *  One or both objects can be null.
+ *  
+ *  @author Martin Massera
+ */
 public final class Triad<T1, T2, T3> implements Serializable, Comparable<Triad<? extends Comparable<T1>, ? extends Comparable<T2>, ? extends Comparable<T3>>>{
     private T1 fst;
     private T2 scnd;

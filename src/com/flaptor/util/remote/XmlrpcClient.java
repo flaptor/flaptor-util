@@ -33,6 +33,8 @@ import com.flaptor.util.IOUtil;
  * This class represents a client of XmlRpc. It provides an ease of use
  * and abstraction over the apache xml rpc client and it handles the 
  * exceptions better  
+ * 
+ * @author Martin Massera
  */
 public class XmlrpcClient {
 	private static final Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());

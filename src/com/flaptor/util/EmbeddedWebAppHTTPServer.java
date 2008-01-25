@@ -22,6 +22,8 @@ import com.flaptor.util.remote.WebServer;
 
 /**
  * Embedded HTTPServer that uses a webapp structured directory   
+ * 
+ * @author Martin Massera
  */
 public class EmbeddedWebAppHTTPServer extends WebServer{
 	/**

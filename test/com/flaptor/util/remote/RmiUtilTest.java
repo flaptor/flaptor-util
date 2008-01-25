@@ -10,6 +10,9 @@ import com.flaptor.util.TestInfo;
 import com.flaptor.util.rmi.IRmiEchoService;
 import com.flaptor.util.rmi.RmiTestSetup;
 
+/**
+ * Tests for {@link RmiUtil}
+ */
 public class RmiUtilTest extends TestCase {
     
     private static final int TEST_VAL_INT_5 = 5;

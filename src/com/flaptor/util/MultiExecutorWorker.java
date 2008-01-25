@@ -26,7 +26,9 @@ import com.flaptor.util.Execution.Results;
  * If the execution is empty it discards it, otherwise it executes the next task 
  * of that execution
  *
- * @param <T> the return type of the execution tasks 
+ * @param <T> the return type of the execution tasks
+ * 
+ * @author Martin Massera
  */
 public class MultiExecutorWorker<T> extends com.flaptor.util.AStoppableThread {
     Queue<Execution<T>> executionQueue;

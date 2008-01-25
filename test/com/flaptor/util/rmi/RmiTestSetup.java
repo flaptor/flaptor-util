@@ -8,6 +8,9 @@ import java.rmi.server.UnicastRemoteObject;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 
+/**
+ * Test for Rmi
+ */
 public class RmiTestSetup extends TestSetup {
 
     public static final String REGISTRY_HOSTNAME = "localhost";

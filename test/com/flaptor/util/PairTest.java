@@ -1,6 +1,8 @@
 package com.flaptor.util;
 
-
+/**
+ * Test for {@link Pair}
+ */
 public class PairTest extends TestCase
 {
     @TestInfo(testType = TestInfo.TestType.UNIT)

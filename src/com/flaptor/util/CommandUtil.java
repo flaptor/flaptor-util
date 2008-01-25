@@ -24,6 +24,8 @@ import org.apache.log4j.Logger;
 
 /**
  * utility class for executing external commands
+ * 
+ * @author Martin Massera
  */
 public class CommandUtil {
 	
