@@ -96,4 +96,8 @@ public abstract class ARmiClientStub extends AClientStub {
 
     protected abstract void setRemote(Remote stub);
 
+
+    public String toString() {
+        return host + ":" + port;
+    }
 }

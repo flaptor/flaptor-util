@@ -105,9 +105,22 @@ public class CommandUtil {
 				ThreadUtil.sleep(50);
 			}
 		}
-		String stdout = IOUtil.readAll(new InputStreamReader(p.getInputStream()));
-		String stderr = IOUtil.readAll(new InputStreamReader(p.getErrorStream()));
+
+        InputStreamReader isri = new InputStreamReader(p.getInputStream());
+        InputStreamReader isre = new InputStreamReader(p.getErrorStream());
+
+        try { 
+    		String stdout = IOUtil.readAll(isri);
+	    	String stderr = IOUtil.readAll(isre);
+		    return new Triad<Integer, String, String>(retCode, stdout, stderr);
+
+        } catch (IOException e) {
+            // LOG?
+            throw e;
+        } finally {
+            Execute.close(isri);
+            Execute.close(isre);
+        }
 		
-		return new Triad<Integer, String, String>(retCode, stdout, stderr);
 	}
 }
