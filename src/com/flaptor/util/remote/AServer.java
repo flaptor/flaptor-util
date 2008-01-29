@@ -90,6 +90,8 @@ public abstract class AServer implements Stoppable {
         runningState = RunningState.STOPPING;
         Thread stopperThread = new Thread() {
             public void run() {
+                logger.debug("running stopThread");
+                logger.debug("requestStopServer");
                 requestStopServer(); //This call is blocking. Important because I want to shut down the RPC
                 //before shutting down the handlers.
                 //Now, shut down every handler that can be shut down.
@@ -97,7 +99,10 @@ public abstract class AServer implements Stoppable {
                     Object handler = entry.getValue();
                     if (!(handler instanceof Stoppable)) continue;
                     Stoppable toStop = (Stoppable) handler;
-                    if (!toStop.isStopped()) ((Stoppable)handler).requestStop();
+                    if (!toStop.isStopped()) {
+                        logger.debug("requestStop of handler " + handler);
+                        ((Stoppable)handler).requestStop();
+                    }
                 }
                 if (null != keepAliveThread) {
                     keepAliveThread.requestStop();
@@ -107,6 +112,7 @@ public abstract class AServer implements Stoppable {
                 boolean allStopped = false;
                 while (!allStopped) {
                     Execute.sleep(20);
+                    logger.debug("sleeping - waiting for all stopped");
                     allStopped = true;
                     for (Map.Entry<String, ? extends Object> entry : getHandlers().entrySet()) {
                         Object handler = entry.getValue();
@@ -118,6 +124,7 @@ public abstract class AServer implements Stoppable {
                     }
                 }
                 runningState = RunningState.STOPPED;
+                logger.debug("ending stopThread");
             }
         };
 
