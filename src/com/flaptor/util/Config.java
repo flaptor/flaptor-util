@@ -83,6 +83,13 @@ public class Config implements Serializable{
     }
 
     /**
+     * Create a named empty config. 
+     */
+    public static Config getEmptyConfig(String filename) {
+        return new Config(filename, new Properties());
+    }
+
+    /**
      * Create a Config with given name and properties.
      */
     private Config(String name, Properties props) {
