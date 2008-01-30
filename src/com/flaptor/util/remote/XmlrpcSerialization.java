@@ -67,7 +67,7 @@ public class XmlrpcSerialization {
 			logger.debug("interface name " + name);
 
 			
-			ClassPool cp = new ClassPool();
+			ClassPool cp = ClassPool.getDefault();
 			CtClass interf = cp.makeInterface(name);
 			List<Method> objectMethods  = Arrays.asList(Object.class.getMethods());
 

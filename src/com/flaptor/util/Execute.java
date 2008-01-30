@@ -162,5 +162,16 @@ public final class Execute {
         }
     }
 
+    /**
+     * requests stop and waits til it actually stops
+     * @param s
+     */
+    public static void stop(Stoppable s) {
+        s.requestStop();
+        while(!s.isStopped()) {
+            Execute.sleep(100);
+        }
+    }
+    
 }
 

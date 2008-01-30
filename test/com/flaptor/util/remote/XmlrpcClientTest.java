@@ -37,10 +37,7 @@ public class XmlrpcClientTest extends TestCase{
     }
 
     protected void tearDown() throws Exception {
-        server.requestStop();
-        while (!server.isStopped()) {
-            Execute.sleep(20);
-        }
+        Execute.stop(server);
     }
 
     @TestInfo(testType = TestInfo.TestType.UNIT,
