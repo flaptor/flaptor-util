@@ -136,17 +136,43 @@ public class TestUtils {
         StringBuffer buf = new StringBuffer();
         int words = minWords + rnd.nextInt(maxWords-minWords+1);
         for (int word=0; word<words; word++) {
+            if (word != 0) {
+                buf.append(' ');
+            }
             int len = 1+rnd.nextInt(8);
             for (int p=0; p<len; p++) {
                 char c = (char)('a' + rnd.nextInt('z'-'a'));
                 buf.append(c);
             }
-            if (word != words) {
-                buf.append(' ');
-            }
         }
         return buf.toString();
     }
 
+    /**
+     * @return a random url, in the form http(s)://somerandomword(.somerandomword)*((/somerandomword)+(.somerandomword))
+     */
+    public static String randomUrl() {
+        StringBuffer b = new StringBuffer();
+        b.append("http");
+        if (rnd.nextBoolean()) b.append("s");
+        b.append("//");
+        for (int i = 0; i < rnd.nextInt(3) + 1; ++i) {
+            b.append(randomText(1, 1));
+        }
+        if (rnd.nextBoolean()) {
+            b.append(":");
+            b.append(rnd.nextInt(65535) + 1);
+        }
+        int numSlashes = rnd.nextInt(5);
+        for (int i = 0; i < numSlashes; ++i) {
+            b.append('/');
+            b.append(TestUtils.randomText(1, 1));
+        }
+        if (numSlashes > 0 && rnd.nextBoolean()) {
+            b.append(".");
+            b.append(TestUtils.randomText(1, 1));
+        }
+        return b.toString();
+    }
 }
 
