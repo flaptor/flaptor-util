@@ -175,11 +175,8 @@ public class Statistics {
 	private class StatisticsTask extends TimerTask {
 		public void run() {
 			for (Triad<EventStats, EventStats, EventStats> stats : eventStatistics.values()) {
-				//clear the previous lastPeriodStats and swap with thisPeriodStats
-			    EventStats temp = stats.third();
-                temp.clear();
 				stats.setThird(stats.second());
-				stats.setSecond(temp);
+				stats.setSecond(new EventStats());
 			}
 		}
 	}
