@@ -13,17 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
-import javassist.CtNewMethod;
+
+import org.apache.log4j.Logger;
 
 import com.flaptor.util.Execute;
-import com.flaptor.util.IOUtil;
-import com.flaptor.util.Pair;
-import com.flaptor.util.Triad;
 
 /**
  * Class for automatically generating Rmi boilerplate code.
@@ -130,7 +126,7 @@ public class RmiCodeGeneration {
         };
         return Proxy.newProxyInstance(originalInterface.getClassLoader(), new Class[]{originalInterface}, handler);
     }
-        
+    
     private static Map<Method, Method> getMethodMap(Class c1, Class c2) {
         final Map<Method, Method> methodMap = new HashMap<Method, Method>();
         for (Method calledMethod : c1.getMethods()) {
@@ -156,4 +152,55 @@ public class RmiCodeGeneration {
         }
         return methodMap;
     }
+    
+    /**
+     * generates a reconnectable stub
+     * 
+     * @param objectInterface
+     * @param context context of the rmi handler, if null uses default
+     * @param host rmi server host
+     * @param port rmi server port
+     * @param policy
+     * @return an object that implements objectInterface
+     */
+    public static Object reconnectableStub(final Class objectInterface, String context, String host, int port, IRetryPolicy policy) {
+        
+        final StubbingInvocationHandler stubbingInvocationHandler = new StubbingInvocationHandler();
+        final ARmiClientStub myStub = new ARmiClientStub(port, host, context, policy) {
+            protected void setRemote(Remote stub) {
+                stubbingInvocationHandler.setObjectProxy(proxy(stub, objectInterface));
+            }
+        };
+        stubbingInvocationHandler.setRmiStub(myStub);
+        return Proxy.newProxyInstance(objectInterface.getClassLoader(), new Class[]{objectInterface}, stubbingInvocationHandler);
+    }
+
+    private static class StubbingInvocationHandler implements InvocationHandler {
+        private ARmiClientStub rmiStub;
+        private Object objectProxy;
+        public void setRmiStub(ARmiClientStub rmiStub) {
+            this.rmiStub = rmiStub;
+        }
+        public void setObjectProxy(Object objectProxy) {
+            this.objectProxy = objectProxy;
+        }
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            try { 
+                rmiStub.checkConnection();
+                Object ret = method.invoke(objectProxy, args);
+                rmiStub.connectionSuccess();
+                return ret;
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof RemoteException) { 
+                    logger.error(e,e);
+                    rmiStub.connectionFailure();
+                    throw new ConnectionException(e);
+                } else {
+                    //other exceptions were thrown in the server code, we must throw them
+                    rmiStub.connectionSuccess();
+                    throw e.getCause();
+                }
+            }
+        }
+    };
 }

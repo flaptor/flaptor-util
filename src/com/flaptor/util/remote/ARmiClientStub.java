@@ -29,18 +29,28 @@ public abstract class ARmiClientStub extends AClientStub {
    
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
 
-    private final String serviceName = RmiServer.DEFAULT_SERVICE_NAME;
+    private final String serviceName;
     private final boolean waitForPolicy;
     private boolean remoteInitialized;
 
+    public ARmiClientStub(int port, String host, String context, IRetryPolicy policy) {
+        this(port,host,context,policy,false);
+    }
+
     public ARmiClientStub(int port, String host, IRetryPolicy policy) {
         this(port,host,policy,false);
-        
     }
 
     public ARmiClientStub(int port, String host, IRetryPolicy policy, boolean wait) {
         super(port,host,policy);
         this.waitForPolicy = wait;
+        serviceName = RmiServer.DEFAULT_SERVICE_NAME;
+    }
+
+    public ARmiClientStub(int port, String host, String context, IRetryPolicy policy, boolean wait) {
+        super(port,host,policy);
+        this.waitForPolicy = wait;
+        serviceName = context != null ? context : RmiServer.DEFAULT_SERVICE_NAME;
     }
 
     private void connect() throws RemoteException{
