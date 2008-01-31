@@ -19,25 +19,45 @@ package com.flaptor.util;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.apache.log4j.Logger;
 
 import com.flaptor.hist4j.AdaptiveHistogram;
 
 /**
- * class for keeping statistics of events
+ * class for keeping statistics of events. Events can be registered and kept track of.
+ * Event data is collected in periods. You can get the accumulated data from start, the data from the
+ * last period and the data gathered in this (unfinished) period.   
+ * 
+ * There is a singleton instance configured in either common.properties (statistics.period) 
+ * or 1 minute if thats missing
  * 
  * @author Martin Massera
  */
 public class Statistics {
-	private static Statistics instance = new Statistics(60000);
+    private static final Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());
+	private static final Statistics instance;
 	
+	static {
+	    int time;
+	    try{ 
+	        time = Config.getConfig("common.properties").getInt("statistics.period");
+	    } catch (IllegalStateException e) {
+	        time = 60000;
+	        logger.warn("statistics.period not found in common.properties");
+	    }
+	    instance = new Statistics(time);
+	}
 	//returns a static instance that updates every minute 
 	public static Statistics getStatistics() {
 		return instance;
 	}
 	
-	private Map<String, Pair<EventStats,EventStats>> eventStatistics = new HashMap<String, Pair<EventStats,EventStats>>();
+	//map of event -> AccumulatedStats, thisPeriodStats, lastPeriodStats
+	private Map<String, Triad<EventStats,EventStats,EventStats>> eventStatistics = new HashMap<String, Triad<EventStats,EventStats,EventStats>>();
 	private int periodLength;
 	
 	Statistics(int periodLength) {
@@ -45,41 +65,63 @@ public class Statistics {
         new Timer().schedule(new StatisticsTask(), 0, periodLength);
 	}
 
+	/**
+	 * notifies the value of an event
+	 * @param eventName
+	 * @param value
+	 */
 	public void notifyEventValue(String eventName, float value) {
-		Pair<EventStats,EventStats> eventStats = getOrCreateStats(eventName);
+	    Triad<EventStats,EventStats,EventStats> eventStats = getOrCreateStats(eventName);
 		eventStats.first().addSample(value);
-		eventStats.last().addSample(value);		
+		eventStats.second().addSample(value);		
 	}
 
+	/**
+	 * notifies an error of an event 
+	 * @param eventName
+	 */
 	public void notifyEventError(String eventName) {
-		Pair<EventStats,EventStats> eventStats = getOrCreateStats(eventName);
+	    Triad<EventStats,EventStats,EventStats> eventStats = getOrCreateStats(eventName);
 		eventStats.first().addError();
-		eventStats.last().addError();		
+		eventStats.second().addError();		
 	}
 
-	private Pair<EventStats,EventStats> getOrCreateStats(String eventName) {
-		Pair<EventStats,EventStats> eventStats = eventStatistics.get(eventName);
+	private Triad<EventStats,EventStats,EventStats> getOrCreateStats(String eventName) {
+	    Triad<EventStats,EventStats,EventStats> eventStats = eventStatistics.get(eventName);
 		if (eventStats == null) {
-			eventStats = new Pair<EventStats,EventStats>(new EventStats(), new EventStats());
+			eventStats = new Triad<EventStats,EventStats,EventStats>(new EventStats(), new EventStats(), new EventStats());
 			eventStatistics.put(eventName, eventStats);
 		}
 		return eventStats;
 	}
 
-	public Pair<EventStats,EventStats> getStats(String eventName) {
+    public Set<String> getEvents() {
+        return eventStatistics.keySet();
+    }
+
+    /**
+     * 
+     * @param eventName
+     * @return the statistics in form <accumulatedStats, thisPeriodStats, lastPeriodStats>
+     */
+	public Triad<EventStats,EventStats,EventStats> getStats(String eventName) {
 		return eventStatistics.get(eventName);
 	}
 
-	public EventStats getThisPeriodStats(String eventName) {
-		return eventStatistics.get(eventName).first();
+    public EventStats getAccumulatedStats(String eventName) {
+        return eventStatistics.get(eventName).first();
+    }
+
+    public EventStats getThisPeriodStats(String eventName) {
+		return eventStatistics.get(eventName).second();
 	}
 
-	public EventStats getAccumulatedStats(String eventName) {
-		return eventStatistics.get(eventName).last();
-	}
+    public EventStats getLastPeriodStats(String eventName) {
+        return eventStatistics.get(eventName).third();
+    }
 
-	public EventStats clearAccumulatedStats(String eventName) {
-		return eventStatistics.get(eventName).last();
+	public void clearAccumulatedStats(String eventName) {
+	    eventStatistics.get(eventName).first().clear();
 	}
 
 	public int getPeriodLength() {
@@ -132,8 +174,12 @@ public class Statistics {
 	
 	private class StatisticsTask extends TimerTask {
 		public void run() {
-			for (Map.Entry<String, Pair<EventStats, EventStats>> entry : eventStatistics.entrySet()) {
-				entry.getValue().first().clear();
+			for (Triad<EventStats, EventStats, EventStats> stats : eventStatistics.values()) {
+				//clear the previous lastPeriodStats and swap with thisPeriodStats
+			    EventStats temp = stats.third();
+                temp.clear();
+				stats.setThird(stats.second());
+				stats.setSecond(temp);
 			}
 		}
 	}
