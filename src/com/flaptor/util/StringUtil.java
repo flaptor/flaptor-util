@@ -16,6 +16,9 @@ limitations under the License.
 
 package com.flaptor.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 
 /**
  * Helper class to manipulate strings.
@@ -65,6 +68,29 @@ public final class StringUtil {
         }
         return sb.toString();
     }
+    
+    /**
+     * @param string
+     * @return the string encoded in UTF-8
+     */
+    public static String urlEncode(String string) {
+        try {
+            return URLEncoder.encode(string, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    /**
+     * @param string
+     * @return the string decoded using UTF-8
+     */
+    public static String urlDecode(String string) {
+        try {
+            return URLEncoder.encode(string, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 
