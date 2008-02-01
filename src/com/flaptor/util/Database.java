@@ -36,8 +36,7 @@ public class Database {
     private static String user;
     private static String pass;
     
-    public Database(String configFile) {
-        Config config = Config.getConfig(configFile);
+    public Database(Config config) {
         driver = config.getString("database.driver");
         dburl = config.getString("database.url");
         user = config.getString("database.user");
