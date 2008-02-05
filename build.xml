@@ -124,8 +124,9 @@ limitations under the License.
 		</jar>
     </target>
 
+    <!--******************************************************************************************************-->
     <target name="fatjar" depends="compile" description="builds the util jar file" >
-        <jar jarfile="${output.dir}/${project}-${version}.jar" >
+        <jar jarfile="${output.dir}/${project}-${version}-fat.jar" >
             <manifest>
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Version" value="${version}"/>
@@ -143,6 +144,21 @@ limitations under the License.
             </zipgroupfileset>
         </jar>
     </target>
+	
+    <!--******************************************************************************************************-->
+    <target name="depjar" depends="compile" description="builds the util jar file" >
+        <jar jarfile="${output.dir}/${project}-${version}-deps.jar" >
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Version" value="${version}"/>
+            </manifest>
+
+            <zipgroupfileset dir="${lib.dir}">
+                 <include name="*.jar" />
+            </zipgroupfileset>
+        </jar>
+    </target>
+	
     <!--******************************************************************************************************-->
     <target name="doc" description="creates the util javadoc" >
         <delete dir="${javadoc.dir}" />
