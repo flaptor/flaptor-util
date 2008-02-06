@@ -76,6 +76,7 @@ public final class Triad<T1, T2, T3> implements Serializable, Comparable<Triad<?
         return buf.toString();
     }
     
+    @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object o) {
         if (o == null) return false;
@@ -97,6 +98,14 @@ public final class Triad<T1, T2, T3> implements Serializable, Comparable<Triad<?
             if (!thrd.equals(obj.thrd)) return false;
         }
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int h1 = (null == fst) ? 0 : fst.hashCode();
+        int h2 = (null == scnd) ? 0 : scnd.hashCode();
+        int h3 = (null == thrd) ? 0 : thrd.hashCode();
+        return h1 ^ h2 ^ h3;
     }
  
     /**
