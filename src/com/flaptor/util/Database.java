@@ -43,6 +43,10 @@ public class Database {
         pass = config.getString("database.pass");
     }
     
+    public Database(String configfile) {
+    	this(Config.getConfig(configfile));
+    }
+    
     private Connection con = null;
 
     public void connect() throws Exception {
