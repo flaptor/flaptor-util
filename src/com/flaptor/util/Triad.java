@@ -52,18 +52,6 @@ public final class Triad<T1, T2, T3> implements Serializable, Comparable<Triad<?
         return thrd;
     }
 
-    public void setFirst(T1 first) {
-        this.fst = first;
-    }
-
-    public void setSecond(T2 second) {
-        this.scnd = second;
-    }
-
-    public void setThird(T3 third) {
-        this.thrd = third;
-    }
-
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("(")

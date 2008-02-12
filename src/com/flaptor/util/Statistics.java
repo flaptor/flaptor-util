@@ -57,7 +57,7 @@ public class Statistics {
 	}
 	
 	//map of event -> AccumulatedStats, thisPeriodStats, lastPeriodStats
-	private Map<String, Triad<EventStats,EventStats,EventStats>> eventStatistics = new HashMap<String, Triad<EventStats,EventStats,EventStats>>();
+	private Map<String, EventStats[]> eventStatistics = new HashMap<String, EventStats[]>();
 	private int periodLength;
 	
 	Statistics(int periodLength) {
@@ -71,9 +71,9 @@ public class Statistics {
 	 * @param value
 	 */
 	public void notifyEventValue(String eventName, float value) {
-	    Triad<EventStats,EventStats,EventStats> eventStats = getOrCreateStats(eventName);
-		eventStats.first().addSample(value);
-		eventStats.second().addSample(value);		
+	    EventStats[] eventStats = getOrCreateStats(eventName);
+	    eventStats[0].addSample(value);
+	    eventStats[1].addSample(value);		
 	}
 
 	/**
@@ -81,15 +81,15 @@ public class Statistics {
 	 * @param eventName
 	 */
 	public void notifyEventError(String eventName) {
-	    Triad<EventStats,EventStats,EventStats> eventStats = getOrCreateStats(eventName);
-		eventStats.first().addError();
-		eventStats.second().addError();		
+	    EventStats[] eventStats = getOrCreateStats(eventName);
+	    eventStats[0].addError();
+	    eventStats[1].addError();		
 	}
 
-	private Triad<EventStats,EventStats,EventStats> getOrCreateStats(String eventName) {
-	    Triad<EventStats,EventStats,EventStats> eventStats = eventStatistics.get(eventName);
+	private EventStats[] getOrCreateStats(String eventName) {
+	    EventStats[] eventStats = eventStatistics.get(eventName);
 		if (eventStats == null) {
-			eventStats = new Triad<EventStats,EventStats,EventStats>(new EventStats(), new EventStats(), new EventStats());
+			eventStats = new EventStats[] {new EventStats(), new EventStats(), new EventStats()}; 
 			eventStatistics.put(eventName, eventStats);
 		}
 		return eventStats;
@@ -105,23 +105,24 @@ public class Statistics {
      * @return the statistics in form <accumulatedStats, thisPeriodStats, lastPeriodStats>
      */
 	public Triad<EventStats,EventStats,EventStats> getStats(String eventName) {
-		return eventStatistics.get(eventName);
+	    EventStats[] eventStats = eventStatistics.get(eventName);
+	    return new Triad<EventStats,EventStats,EventStats>(eventStats[0],eventStats[1],eventStats[2]);
 	}
 
     public EventStats getAccumulatedStats(String eventName) {
-        return eventStatistics.get(eventName).first();
+        return eventStatistics.get(eventName)[0];
     }
 
     public EventStats getThisPeriodStats(String eventName) {
-		return eventStatistics.get(eventName).second();
+		return eventStatistics.get(eventName)[1];
 	}
 
     public EventStats getLastPeriodStats(String eventName) {
-        return eventStatistics.get(eventName).third();
+        return eventStatistics.get(eventName)[2];
     }
 
 	public void clearAccumulatedStats(String eventName) {
-	    eventStatistics.get(eventName).first().clear();
+	    eventStatistics.get(eventName)[0].clear();
 	}
 
 	public int getPeriodLength() {
@@ -174,9 +175,9 @@ public class Statistics {
 	
 	private class StatisticsTask extends TimerTask {
 		public void run() {
-			for (Triad<EventStats, EventStats, EventStats> stats : eventStatistics.values()) {
-				stats.setThird(stats.second());
-				stats.setSecond(new EventStats());
+			for (EventStats[] stats : eventStatistics.values()) {
+				stats[2] = stats[1];
+				stats[1] = new EventStats();
 			}
 		}
 	}
