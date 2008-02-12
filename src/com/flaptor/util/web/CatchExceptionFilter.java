@@ -12,6 +12,7 @@ import javax.servlet.ServletResponse;
 import org.apache.log4j.Logger;
 
 import com.flaptor.util.Execute;
+import com.flaptor.util.IOUtil;
 
 /**
  * Filter that catches uncaught throwbles and redirects to an error page.
@@ -40,7 +41,8 @@ public class CatchExceptionFilter implements Filter
         catch (Throwable t)
         {
             logger.warn("Exception caught", t);
-            request.setAttribute("throwable", t);
+            request.setAttribute("message", t.getMessage());
+            request.setAttribute("stacktrace", IOUtil.getStackTrace(t));
             request.getRequestDispatcher(errorPage).forward(request, response);
         }
     }   

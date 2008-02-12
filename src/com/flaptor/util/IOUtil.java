@@ -92,4 +92,10 @@ public class IOUtil {
     	ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
     	return deserialize(bis);
     }
+   	
+   	public static String getStackTrace(Throwable t) {
+        java.io.CharArrayWriter caw = new java.io.CharArrayWriter();
+        t.printStackTrace(new java.io.PrintWriter(caw)); 
+        return caw.toString();
+   	}
 }
