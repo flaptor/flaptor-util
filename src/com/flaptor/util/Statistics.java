@@ -176,8 +176,10 @@ public class Statistics {
 	private class StatisticsTask extends TimerTask {
 		public void run() {
 			for (EventStats[] stats : eventStatistics.values()) {
-				stats[2] = stats[1];
-				stats[1] = new EventStats();
+			    synchronized(stats) {
+			        stats[2] = stats[1];
+			        stats[1] = new EventStats();
+			    }
 			}
 		}
 	}
