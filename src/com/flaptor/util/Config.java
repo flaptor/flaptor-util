@@ -229,10 +229,23 @@ public class Config implements Serializable{
     	
     	BufferedReader reader = new BufferedReader(new FileReader(destFile));
     	List<String> lines = new ArrayList<String>();
+    	String accumulatedLine = "";
     	while (true) {
     		String line = reader.readLine();
-    		if (line == null) break;
-    		lines.add(line);
+    		if (line == null) {
+    			if (accumulatedLine.length() > 0) lines.add(accumulatedLine);
+    			break;
+    		}
+    		if (line.trim().endsWith("\\")) {
+    			if (accumulatedLine.length() > 0) accumulatedLine += "\n";
+    			accumulatedLine += line;
+    		} else {
+    			if (accumulatedLine.length() > 0) {
+    				line = accumulatedLine + "\n" + line;
+        			accumulatedLine = "";
+    			}
+        		lines.add(line);
+    		}
     	}
     	reader.close();
     	for (Map.Entry<Object, Object> e : change.entrySet()) {
