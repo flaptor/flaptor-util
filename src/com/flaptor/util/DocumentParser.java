@@ -59,7 +59,7 @@ public class DocumentParser {
                 doc = reader.read(new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(s.getBytes())));
             }
         } catch (DocumentException e) {
-            logger.debug("genDocument: cannot convert text to document.");
+            logger.debug("genDocument: cannot convert text to document.",e);
             return null;
         }
         return doc;
