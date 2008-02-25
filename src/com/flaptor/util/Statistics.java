@@ -62,7 +62,7 @@ public class Statistics {
 	
 	Statistics(int periodLength) {
 		this.periodLength = periodLength;
-        new Timer().schedule(new StatisticsTask(), 0, periodLength);
+        new Timer(true).schedule(new StatisticsTask(), 0, periodLength);
 	}
 
 	/**
@@ -171,6 +171,17 @@ public class Statistics {
 			numErrors++;
 			errorRatio = numErrors / (numErrors + numCorrectSamples);
 		}
+
+        public String toString() {
+            return  " correct samples: " + numCorrectSamples + " \n" +
+                    " error samples: " + numErrors +" \n" +
+                    " total samples: " + (numCorrectSamples + numErrors) + "\n" +
+                    " error ratio: " + errorRatio + "\n" + 
+                    " ------------------------ \n" +
+                    " max sample: " + histogram.getValueForPercentile(100) + "\n" + 
+                    " min sample: " + histogram.getValueForPercentile(0) + "\n" + 
+                    " median sample: " + histogram.getValueForPercentile(50);
+        }
 	}
 	
 	private class StatisticsTask extends TimerTask {
