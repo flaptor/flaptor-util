@@ -217,7 +217,7 @@ public final class FileUtil {
      * @throws no exception is thrown by this implementation.
      *         The returned value must be checked to verify that no error has ocurred.
      */
-    // Rafa assumes in com.flaptor.search4j.classifier.util.ProbsUtils#loadMaps(String, String, int)}
+    // Rafa assumes in com.flaptor.hounder.classifier.util.ProbsUtils#loadMaps(String, String, int)}
     // that this method returns a list in the same order that the file it reads.
     // If you change that, please update the training app.     
     public static boolean fileToList(final String dirname, final String filename, final List<String> list, Logger logger) {
@@ -274,8 +274,8 @@ public final class FileUtil {
      * @throws no exception is thrown by this implementation.
      *         The returned value must be checked to verify that no error has ocurred.
      */
-    // Rafa assumes in com.flaptor.search4j.classifier.util.ProbsUtils#loadMaps(String, String, int)}
-    // and com.flaptor.search4j.classifier.LearningBean#saveData() 
+    // Rafa assumes in com.flaptor.hounder.classifier.util.ProbsUtils#loadMaps(String, String, int)}
+    // and com.flaptor.hounder.classifier.LearningBean#saveData() 
     // that this method will save the file with the same order it received the list
     // If you change that, please update the training app.     
     public static boolean listToFile(final String dirname, final String filename, final List<String> list, Logger logger) {
