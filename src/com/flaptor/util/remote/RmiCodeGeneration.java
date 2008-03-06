@@ -111,7 +111,7 @@ public class RmiCodeGeneration {
         }
     }
     /**
-     * Given a remote, creates a proxy of the provided interface that calls methods in that remotes
+     * Given a remote, creates a proxy of the provided interface that calls methods in that remote
      * If exceptions are thrown in the remote server code, they are thrown through the original interface
      * as the original exception. Other exceptions should be caught as RemoteException
      * 
