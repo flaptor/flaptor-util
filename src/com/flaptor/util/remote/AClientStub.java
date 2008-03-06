@@ -21,7 +21,7 @@ package com.flaptor.util.remote;
  * mechanism.
  * The concrete subclasses should implement the actual methods exported
  * by rpc, but those methods can throw ConnectionException when the connection fails.
- * @see ConnectionException
+ * @see RpcException
  *
  */
 public abstract class AClientStub {

@@ -32,7 +32,7 @@ import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
 import com.flaptor.util.cache.FileCache;
 import com.flaptor.util.cache.RmiCacheStub;
-import com.flaptor.util.remote.ConnectionException;
+import com.flaptor.util.remote.RpcException;
 import com.flaptor.util.remote.RmiServer;
 
 /**
@@ -62,7 +62,7 @@ public class TempFileCacheTest extends TestCase {
 
     @TestInfo(testType = TestInfo.TestType.INTEGRATION,
             requiresPort = {50500})
-    public void testRemote() throws RemoteException, UnsupportedEncodingException, ConnectionException {
+    public void testRemote() throws RemoteException, UnsupportedEncodingException, RpcException {
         int port = 50500;
         RmiServer server = new RmiServer(port);
         server.addHandler(RmiServer.DEFAULT_SERVICE_NAME, cache);

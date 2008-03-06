@@ -24,7 +24,7 @@ import java.rmi.registry.Registry;
 import org.apache.log4j.Logger;
 
 import com.flaptor.util.remote.AClientStub;
-import com.flaptor.util.remote.ConnectionException;
+import com.flaptor.util.remote.RpcException;
 import com.flaptor.util.remote.ExponentialFallbackPolicy;
 import com.flaptor.util.remote.RmiServer;
 
@@ -41,26 +41,26 @@ public class RmiCacheStub<T extends Serializable> extends AClientStub implements
         super(port, host, new ExponentialFallbackPolicy());
     }
 
-    public void addItem(final String key, final T value) throws ConnectionException {
+    public void addItem(final String key, final T value) throws RpcException {
         doRemote(new RemoteAction() {
             public Object execute() throws RemoteException {
                 remoteCache.addItem(key, value);
                 return null;}});
     }
 
-    public boolean hasItem(final String key) throws ConnectionException {
+    public boolean hasItem(final String key) throws RpcException {
         return (Boolean) doRemote(new RemoteAction() {
             public Object execute() throws RemoteException {
                 return remoteCache.hasItem(key);}});    }
 
-    public boolean removeItem(final String key) throws ConnectionException {
+    public boolean removeItem(final String key) throws RpcException {
         return (Boolean) doRemote(new RemoteAction() {
             public Object execute() throws RemoteException {
                 return remoteCache.removeItem(key);}});
     }
 
     @SuppressWarnings("unchecked")
-    public T getItem(final String key) throws ConnectionException {
+    public T getItem(final String key) throws RpcException {
         return (T) doRemote(new RemoteAction() {
             public Object execute() throws RemoteException {
                 return remoteCache.getItem(key);}});
@@ -86,24 +86,24 @@ public class RmiCacheStub<T extends Serializable> extends AClientStub implements
         }
     }
     
-    public Object doRemote(RemoteAction remoteAction) throws ConnectionException {
+    public Object doRemote(RemoteAction remoteAction) throws RpcException {
         if (policy.reconnect()) {
             connect();
         }
         if (policy.callServer()) {
             try {
                 if (null == remoteCache) {
-                    throw new ConnectionException();
+                    throw new RpcException();
                 }
                 Object ret = remoteAction.execute();
                 policy.markSuccess();
                 return ret;
             } catch (RemoteException e) {
                 policy.markFailure();
-                throw new ConnectionException(e);
+                throw new RpcException(e);
             }
         } else {
-            throw new ConnectionException("The policy requested to skip this server.");
+            throw new RpcException("The policy requested to skip this server.");
         }        
     }
 

@@ -17,17 +17,25 @@ limitations under the License.
 package com.flaptor.util.remote;
 
 /**
- * An exception thrown by a stub when an rpc method fails.
+ * Exception for RPC related problems, especially for code generation
+ * 
+ * @author Martin Massera
  */
-public class ConnectionException extends RuntimeException {
-    public ConnectionException() {
-    }
-    
-    public ConnectionException(Throwable cause) {
-        super(cause);
+public class RpcException extends RuntimeException {
+
+    public RpcException() {
+        super();
     }
 
-    public ConnectionException(String msg) {
-        super(msg);
+    public RpcException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RpcException(String message) {
+        super(message);
+    }
+
+    public RpcException(Throwable cause) {
+        super(cause);
     }
 }

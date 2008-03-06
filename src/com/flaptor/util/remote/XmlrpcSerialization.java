@@ -17,8 +17,10 @@ limitations under the License.
 package com.flaptor.util.remote;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -133,9 +135,9 @@ public class XmlrpcSerialization {
 							ret = IOUtil.serialize(ret);
 						}
 						return ret;
-					} catch (Throwable t) {
-						logger.error(t);
-						throw t;
+					} catch (InvocationTargetException e) {
+						logger.error(e.getCause());
+						throw e.getCause();
 					}
 				}
 			};

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.ConnectException;
 import java.net.URL;
 import java.util.Vector;
 
@@ -76,16 +77,19 @@ public class XmlrpcClient {
 		try {
 			ret = client.execute(method, v);
 		} catch (IOException e1) {
-			throw new RuntimeException(e1);
+		    if (e1 instanceof ConnectException) {
+		        throw new RpcConnectionException(e1);
+		    } else throw new RuntimeException(e1);
 		}
 		
 		if (ret instanceof XmlRpcException) {
 			XmlRpcException e = (XmlRpcException)ret;
-			if (e.getMessage().contains("NoSuchMethodException")) {
-				throw new UnsupportedOperationException(method);
+			if (e.getMessage().contains("NoSuchMethodException") || (e.getMessage().contains("RPC handler object") &&  e.getMessage().contains("not found"))) {
+				throw new NoSuchRpcMethodException(method);
+			} else if (e.getMessage().contains("java.lang.Exception: ")){
+			    throw new RemoteHostCodeException(e.getMessage().replace("java.lang.Exception: ", "")); 
 			} else {
-				logger.error(e);
-				throw e;
+			    throw e;
 			}
 		} else {
 			return ret;

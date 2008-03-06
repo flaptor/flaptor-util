@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
@@ -30,8 +31,6 @@ import com.flaptor.util.Execute;
  */
 public class RmiCodeGeneration {
     private static Logger logger = Logger.getLogger(Execute.whoAmI());
-    
-    private static final String THROWABLE_IN_REMOTE_HOST_CODE = "caught throwable in remote host code";
     private static final Map<String, Class> classMap = new HashMap<String, Class>(); 
     
     /**
@@ -62,7 +61,9 @@ public class RmiCodeGeneration {
                         return originalMethod.invoke(originalHandler, args);
                     } catch (InvocationTargetException e) {
                         logger.debug("wrapping throwable in RemoteException");
-                        throw new RemoteException(THROWABLE_IN_REMOTE_HOST_CODE, e.getCause());
+                        throw new RemoteException(RemoteHostCodeException.THROWABLE_IN_REMOTE_HOST_CODE, e.getCause());
+                    } catch (Throwable t) {
+                        throw new RemoteException(RemoteHostCodeException.THROWABLE_IN_REMOTE_HOST_CODE, t);
                     }
                 }
             };
@@ -123,6 +124,8 @@ public class RmiCodeGeneration {
         logger.debug("constructing reverse method map");
         final Map<Method, Method> methodMap = getMethodMap(originalInterfaces, remote.getClass());
         InvocationHandler handler = new InvocationHandler() {
+            
+            @SuppressWarnings("unchecked")
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 Method originalMethod = methodMap.get(method);
                 logger.debug("invoking original method " + originalMethod + " for " + method);
@@ -131,8 +134,15 @@ public class RmiCodeGeneration {
                 } catch (InvocationTargetException e) {
                     Throwable t = e.getCause();
                     if (t instanceof ServerException) {
-                        if (t.getCause() instanceof RemoteException && t.getCause().getMessage().contains(THROWABLE_IN_REMOTE_HOST_CODE)) {
-                            throw t.getCause().getCause();
+                        if (t.getCause() instanceof RemoteException && t.getCause().getMessage().contains(RemoteHostCodeException.THROWABLE_IN_REMOTE_HOST_CODE)) {
+                            Throwable remoteCodeException = t.getCause().getCause();
+                            if (RuntimeException.class.isAssignableFrom(remoteCodeException.getClass())) throw remoteCodeException;
+                            for (Class exceptionClass: method.getExceptionTypes()) {
+                                //if we can throw it as is, throw it
+                                if (exceptionClass.isAssignableFrom(remoteCodeException.getClass())) throw remoteCodeException;
+                            }
+                            //otherwise throw it as a runtime exception
+                            throw new RemoteHostCodeException(remoteCodeException);
                         }
                     }
                     logger.warn("unexpected exception", t);
@@ -213,7 +223,7 @@ public class RmiCodeGeneration {
                 if (e.getCause() instanceof RemoteException) { 
                     logger.error(e,e);
                     rmiStub.connectionFailure();
-                    throw new ConnectionException(e);
+                    throw new RpcException(e);
                 } else {
                     //other exceptions were thrown in the server code, we must throw them
                     rmiStub.connectionSuccess();

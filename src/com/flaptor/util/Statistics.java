@@ -106,6 +106,7 @@ public class Statistics {
      */
 	public Triad<EventStats,EventStats,EventStats> getStats(String eventName) {
 	    EventStats[] eventStats = eventStatistics.get(eventName);
+	    if (eventStats == null) return null;
 	    return new Triad<EventStats,EventStats,EventStats>(eventStats[0],eventStats[1],eventStats[2]);
 	}
 

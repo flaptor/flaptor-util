@@ -17,7 +17,7 @@ package com.flaptor.util.cache;
 
 import java.io.Serializable;
 
-import com.flaptor.util.remote.ConnectionException;
+import com.flaptor.util.remote.RpcException;
 
 /**
  * Interface for remote caches 
@@ -26,11 +26,11 @@ import com.flaptor.util.remote.ConnectionException;
  */
 public interface RemoteCache<T extends Serializable> {
 
-    public boolean hasItem (String key) throws ConnectionException;
+    public boolean hasItem (String key) throws RpcException;
     
-    public T getItem (String key) throws ConnectionException;
+    public T getItem (String key) throws RpcException;
     
-    public void addItem (String key, T value) throws ConnectionException;    
+    public void addItem (String key, T value) throws RpcException;    
     
-    public boolean removeItem (String key) throws ConnectionException;
+    public boolean removeItem (String key) throws RpcException;
 }
