@@ -92,5 +92,14 @@ public final class StringUtil {
             throw new RuntimeException(e);
         }
     }
+    
+    /**
+     * @TODO xxx add spaces and tabs too
+     * @param string
+     * @return the string with \n replaced by <br/>
+     */
+    public static String whitespaceToHtml(String string) {
+        return string.replace("\n", "<br/>");
+    }
 }
 
