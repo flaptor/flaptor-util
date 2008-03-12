@@ -135,7 +135,7 @@ public class Statistics {
 		public long numErrors;
 		public float errorRatio;
 
-		public float sampleAverage;
+		private float sampleSum;
 		
 		public float maximum;
 		public float minimum;
@@ -150,7 +150,7 @@ public class Statistics {
 			numErrors = 0;
 			numCorrectSamples = 0;
 			errorRatio = 0;
-			sampleAverage = 0;
+			sampleSum = 0;
 			maximum= -100000000000000.0f;
 			minimum= 100000000000000.0f;
 			histogram.reset();
@@ -158,7 +158,7 @@ public class Statistics {
 		
 		private synchronized void addSample(float value) {
 			numCorrectSamples++;
-			sampleAverage = (numCorrectSamples * sampleAverage + value) / numCorrectSamples ;
+			sampleSum += value;
 			
 			if (value < minimum) minimum = value;
 			if (value > maximum) maximum = value;
@@ -173,6 +173,14 @@ public class Statistics {
 			errorRatio = numErrors / (numErrors + numCorrectSamples);
 		}
 
+		public AdaptiveHistogram getHistogram() {
+			return histogram;
+		}
+		
+		public float getSampleAverage() {
+			return sampleSum / numCorrectSamples;
+		}
+		
         public String toString() {
             return  " correct samples: " + numCorrectSamples + " \n" +
                     " error samples: " + numErrors +" \n" +
@@ -181,7 +189,7 @@ public class Statistics {
                     " ------------------------ \n" +
                     " max sample: " + histogram.getValueForPercentile(100) + "\n" + 
                     " min sample: " + histogram.getValueForPercentile(0) + "\n" + 
-                    " median sample: " + histogram.getValueForPercentile(50);
+                    " median sample: " + histogram.getValueForPercentile(50) + "\n";
         }
 	}
 	
