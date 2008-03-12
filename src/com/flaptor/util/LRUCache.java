@@ -16,6 +16,7 @@ limitations under the License.
 
 package com.flaptor.util;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 
 /**
@@ -23,7 +24,7 @@ import java.util.LinkedHashMap;
  * It simply uses LinkedHashMap as it was designed for this purpose.
  * This class is thread-safe.
  */
-public class LRUCache<K,V> extends Cache<K,V> {
+public class LRUCache<K,V> extends Cache<K,V> implements Serializable {
 
 	protected final LinkedHashMap<K,V> map;
 

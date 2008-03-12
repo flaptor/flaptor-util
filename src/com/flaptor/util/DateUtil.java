@@ -49,8 +49,22 @@ public class DateUtil {
      */
     public static Calendar getCanonicalDay(Calendar cal) {
         Calendar ret = new GregorianCalendar(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 0 ,0 ,0);
+        ret.set(Calendar.MILLISECOND, 0);
         return ret;
     }
+    
+    /**
+     * Returns the last millisecond of the given day  
+     * the day (2008/03/07 15:23:32 992ms --> 2008/03/07 23:59:59 999ms)
+     * @param cal
+     * @return 
+     */
+    public static Calendar getLastMilli(Calendar cal) {
+        Calendar ret = new GregorianCalendar(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        ret.set(Calendar.MILLISECOND, 999);
+        return ret;
+    }
+    
     /**
      * Returns the canonical day of the day specified in days from now
      * @param daysFromToday today = 0, tomorrow = +1, yesterday = -1, same day next week = +7, etc
