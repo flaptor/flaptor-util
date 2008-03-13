@@ -131,6 +131,9 @@ public class Statistics {
 	}
 	
 	public static class EventStats implements Serializable {
+
+		private static final long serialVersionUID = 12345L;
+
 		public long numCorrectSamples;
 		public long numErrors;
 		public float errorRatio;
@@ -177,19 +180,55 @@ public class Statistics {
 			return histogram;
 		}
 		
-		public float getSampleAverage() {
-			return sampleSum / numCorrectSamples;
+		public float getAvg() {
+			if (numCorrectSamples > 0) {
+				return sampleSum / numCorrectSamples;
+			} else {
+				return Float.NaN;
+			}
+		}
+		
+		public float getMedian() {
+			return histogram.getValueForPercentile(50);
+		}
+		
+		public float getMin() {
+			return minimum;
+		}
+		
+		public float getMax() {
+			return maximum;
+		}
+		
+		public long totalSamples() {
+			return numCorrectSamples + numErrors;
+		}
+		
+		public long correctSamples() {
+			return numCorrectSamples;
+		}
+		
+		public long errorSamples() {
+			return numErrors;
+		}
+		
+		public float getErrorRatio() {
+			if (numErrors + numCorrectSamples > 0) {
+				return numErrors / (numErrors + numCorrectSamples);
+			} else {
+				return 0f;
+			}
 		}
 		
         public String toString() {
-            return  " correct samples: " + numCorrectSamples + " \n" +
-                    " error samples: " + numErrors +" \n" +
-                    " total samples: " + (numCorrectSamples + numErrors) + "\n" +
-                    " error ratio: " + errorRatio + "\n" + 
+            return  " correct samples: " + correctSamples() + " \n" +
+                    " error samples: " + errorSamples() +" \n" +
+                    " total samples: " + totalSamples() + "\n" +
+                    " error ratio: " + getErrorRatio() + "\n" + 
                     " ------------------------ \n" +
-                    " max sample: " + histogram.getValueForPercentile(100) + "\n" + 
-                    " min sample: " + histogram.getValueForPercentile(0) + "\n" + 
-                    " median sample: " + histogram.getValueForPercentile(50) + "\n";
+                    " max sample: " + getMax() + "\n" + 
+                    " min sample: " + getMin() + "\n" + 
+                    " median sample: " + getMedian() + "\n";
         }
 	}
 	
