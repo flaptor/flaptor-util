@@ -19,12 +19,15 @@ package com.flaptor.util;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * utility class for common IO operations
@@ -97,5 +100,24 @@ public class IOUtil {
         java.io.CharArrayWriter caw = new java.io.CharArrayWriter();
         t.printStackTrace(new java.io.PrintWriter(caw)); 
         return caw.toString();
+   	}
+   	
+   	/**
+     * reads all non empty lines 
+     * @param toLowerCase if true makes every line lowercase
+   	 * @return a list of strings with a line per element
+   	 * @throws IOException 
+   	 */
+   	public static List<String> readLines(boolean toLowerCase, boolean trim, boolean emptyLines, Reader reader) throws IOException {
+   	    List<String> ret = new ArrayList<String>();
+   	    BufferedReader bufferedReader = new BufferedReader(reader);
+   	    while (true) {
+   	        String line = bufferedReader.readLine();
+   	        if (line == null) return ret;
+   	        if (toLowerCase) line = line.toLowerCase();
+   	        if (trim) line = line.trim();
+   	        if (!emptyLines && line.length() == 0) continue;
+   	        ret.add(line);
+   	    }
    	}
 }

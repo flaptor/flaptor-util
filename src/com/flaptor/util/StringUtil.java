@@ -101,5 +101,13 @@ public final class StringUtil {
     public static String whitespaceToHtml(String string) {
         return string.replace("\n", "<br/>");
     }
+
+    /**
+     * @param post
+     * @return an array of sentences
+     */
+    public static String[] getSentences(String content) {
+        return content.split("\\?|:|;|!|,|\\.");
+    }
 }
 

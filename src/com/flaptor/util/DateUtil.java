@@ -3,6 +3,7 @@ package com.flaptor.util;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 
 /**
  * Utility class for managing dates 
@@ -74,5 +75,33 @@ public class DateUtil {
         Calendar day = new GregorianCalendar();
         day.add(Calendar.DAY_OF_YEAR, daysFromToday);
         return getCanonicalDay(day); 
+    }
+
+    /**
+     * returns an interable of canonical days in (inclusive) range of days
+     * @param from
+     * @param to
+     * @return
+     */
+    public static Iterable<Calendar> dayIterable(Calendar from, Calendar to) {
+        final Calendar nextDay = getCanonicalDay(from);
+        final Calendar upto = getCanonicalDay(to);
+        return new Iterable<Calendar>() {
+            public Iterator<Calendar> iterator() {
+                return new Iterator<Calendar>() {
+                    public boolean hasNext() {
+                        return !nextDay.after(upto);
+                    }
+                    public Calendar next() {
+                        Calendar ret = getCanonicalDay(nextDay);
+                        nextDay.add(Calendar.DAY_OF_YEAR, 1);
+                        return ret;
+                    }
+                    public void remove() {
+                        //do nothing
+                    }
+                };
+            }
+        };
     }
 }
