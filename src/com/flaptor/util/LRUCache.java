@@ -26,7 +26,8 @@ import java.util.LinkedHashMap;
  */
 public class LRUCache<K,V> extends Cache<K,V> implements Serializable {
 
-	protected final LinkedHashMap<K,V> map;
+    private static final long serialVersionUID = 1L;
+    protected final LinkedHashMap<K,V> map;
 
     /**
      * @param maxSize the maximum size of the cache, in number of entries. Must be greater than 0.
@@ -34,7 +35,8 @@ public class LRUCache<K,V> extends Cache<K,V> implements Serializable {
 	public LRUCache(final int maxSize) {
         if (maxSize <= 0) throw new IllegalArgumentException("maxSize must be greater than 0.");
 		map = new LinkedHashMap<K,V>(maxSize, 0.75f, true) {
-			//see documentation for LinkedHashMap,
+            private static final long serialVersionUID = 1L;
+            //see documentation for LinkedHashMap,
 			//this is done so that it knows when to remove the eldest entry
 			protected boolean removeEldestEntry(java.util.Map.Entry<K,V> eldest) {
 				return size() > maxSize;

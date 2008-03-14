@@ -131,7 +131,6 @@ public class Statistics {
 	}
 	
 	public static class EventStats implements Serializable {
-
 		private static final long serialVersionUID = 12345L;
 
 		public long numCorrectSamples;

@@ -27,6 +27,7 @@ import java.io.Serializable;
  *  @author Martin Massera
  */
 public final class Triad<T1, T2, T3> implements Serializable, Comparable<Triad<? extends Comparable<T1>, ? extends Comparable<T2>, ? extends Comparable<T3>>>{
+    private static final long serialVersionUID = 1L;
     private T1 fst;
     private T2 scnd;
     private T3 thrd;

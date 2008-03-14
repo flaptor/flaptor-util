@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 
 public class TextSignature implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     protected int[] components = null;
 
     // Adds a word to the hash.

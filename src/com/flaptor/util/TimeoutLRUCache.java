@@ -27,6 +27,7 @@ import java.util.TimerTask;
  */
 public class TimeoutLRUCache<K,V> extends LRUCache<K,V> {
 
+    private static final long serialVersionUID = 1L;
     private Map<K,Long> timeoutMap = new HashMap<K,Long>();
     
     public TimeoutLRUCache(int maxSize, final int elementTimeout) {

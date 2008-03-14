@@ -6,6 +6,8 @@ package com.flaptor.util.remote;
  */
 public class RpcConnectionException extends RpcException {
 
+    private static final long serialVersionUID = 1L;
+
     public RpcConnectionException() {
         super("Connection Exception");
     }

@@ -6,6 +6,8 @@ package com.flaptor.util.remote;
  *
  */
 public class RemoteHostCodeException extends RpcException {
+
+    private static final long serialVersionUID = 1L;
     public static final String THROWABLE_IN_REMOTE_HOST_CODE = "Throwable in remote host code";
     
     public RemoteHostCodeException(String message) {

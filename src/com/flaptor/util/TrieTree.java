@@ -210,6 +210,8 @@ public class TrieTree<Type> {
      */
     public static class DuplicateKeyException extends RuntimeException {
 
+        private static final long serialVersionUID = 1L;
+
         /** Class Constructor. */
         public DuplicateKeyException(String message) {
             super(message);

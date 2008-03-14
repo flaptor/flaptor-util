@@ -7,6 +7,8 @@ package com.flaptor.util.remote;
  */
 public class NoSuchRpcMethodException extends RpcException {
     
+    private static final long serialVersionUID = 1L;
+
     public NoSuchRpcMethodException(String method) {
         super("Could not find remote method " + method);
     }
