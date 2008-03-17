@@ -104,9 +104,9 @@ public final class StringUtil {
 
     /**
      * @param post
-     * @return an array of sentences
+     * @return an array of "subsentences" (phrases not separated by punctuation points)
      */
-    public static String[] getSentences(String content) {
+    public static String[] getSubsentences(String content) {
         return content.split("\\?|:|;|!|,|\\.");
     }
 }
