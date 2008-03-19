@@ -16,6 +16,16 @@ public class DateUtil {
     public static final long MILLIS_IN_MINUTE = MILLIS_IN_SECOND * 60;
     public static final long MILLIS_IN_HOUR = MILLIS_IN_MINUTE * 60;
     public static final long MILLIS_IN_DAY = MILLIS_IN_HOUR * 24;
+
+    public static Calendar toCalendar(Date date) {
+        Calendar c = new GregorianCalendar();
+        c.setTime(date);
+        return c;
+    }
+    
+    public static Date toDate(Calendar calendar) {
+        return calendar.getTime();
+    }
     
     /**
      * counts how many days passed between two dates, counting days and not "24hs":
