@@ -68,10 +68,20 @@ public class Execution<T> {
      * @param <T> the type of the result
      */
     public static class Results<T> {
+        private Callable<T> task;
         private boolean finishedOk = false;
         private T results = null;
         private Throwable exception = null;
         
+        public Results(Callable<T> task) {
+            super();
+            this.task = task;
+        }
+
+        public Callable<T> getTask() {
+            return task;
+        }
+                
         public boolean isFinishedOk() {
             return finishedOk;
         }

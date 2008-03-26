@@ -65,7 +65,7 @@ public class MultiExecutorWorker<T> extends com.flaptor.util.AStoppableThread {
                 }
             }
             
-            Results<T> results = new Results<T>();
+            Results<T> results = new Results<T>(task);
             try {
                 results.setResults(task.call());
                 results.setFinishedOk(true);
