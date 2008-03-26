@@ -17,6 +17,13 @@ limitations under the License.
 package com.flaptor.util;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -170,6 +177,48 @@ public final class Execute {
         s.requestStop();
         while(!s.isStopped()) {
             Execute.sleep(100);
+        }
+    }
+    
+    /**
+     * Executes a task synchronously and if it takes longer than the specified timeout
+     * it gets interrupted and a TimeoutException is thrown.
+     * 
+     * @param <T> the return type of the task
+     * @param callable the task to be executed
+     * @param timeout the maximum time in which the task should be completed
+     * @param unit the time unit of the given timeout.
+     * @return
+     * @throws InterruptedException if this thread gets interrupted while waiting for the task to complete.
+     * @throws ExecutionException if the task throws an exception
+     * @throws TimeoutException if the task doesn't complete before the timeout is reached
+     */
+    public static <T> T executeWithTimeout(Callable<T> callable, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(callable);
+        executor.shutdown();
+        
+        boolean completed = executor.awaitTermination(timeout, unit);
+        if (completed) {
+            return future.get();
+        } else {
+            future.cancel(true);
+            throw new TimeoutException("Timed out");
+        }
+    }
+ 
+    /**
+     * Checks whether the given throwable is of the given type and if that's the case, it casts it
+     * and throws it.
+     * 
+     * @param <T> the type to be checked
+     * @param throwableType a runtime instance of the type to be checked
+     * @param t the throwable to check
+     * @throws T if the given throwable was an instance of the given type
+     */
+    public static <T extends Throwable> void checkAndThrow(Class<T> throwableType, Throwable t) throws T {
+        if (throwableType.isInstance(t)) {
+            throw throwableType.cast(t);
         }
     }
     
