@@ -114,4 +114,14 @@ public class DateUtil {
             }
         };
     }
+    
+    public static Date toDate(long millis) {
+        return new Date(millis);
+    }
+
+    public static Calendar toCalendar(long millis) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(new Date(millis));
+        return cal;
+    }
 }
