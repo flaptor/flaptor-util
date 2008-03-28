@@ -88,6 +88,17 @@ public class DateUtil {
     }
 
     /**
+     * Returns the canonical day of the day specified in days from another date
+     * @param daysFromToday today = 0, tomorrow = +1, yesterday = -1, same day next week = +7, etc
+     * @return
+     */
+    public static Calendar getCanonicalDayFrom(Calendar day, int daysFrom) {
+        Calendar ret = getCanonicalDay(day);
+        ret.add(Calendar.DAY_OF_YEAR, daysFrom);
+        return getCanonicalDay(ret); 
+    }
+
+    /**
      * returns an interable of canonical days in (inclusive) range of days
      * @param from
      * @param to
