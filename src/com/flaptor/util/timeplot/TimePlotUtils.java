@@ -7,8 +7,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.net.URL;
 
 import com.google.common.collect.Lists;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+
+import com.flaptor.util.DomUtil;
 
 /**
  * This class consists exclusively of static methods that can be used
@@ -106,5 +113,109 @@ public class TimePlotUtils {
         
         return buffer.toString();
     }
+
+
+
+    public static String generateEventXml(List<EventInfo> events) {
     
+        DateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy HH:mm:ss 'GMT'");
+
+        Document dom = DocumentHelper.createDocument();
+        Element root = dom.addElement("data");
+        for (EventInfo event: events) {
+            if (event.isNull()) {
+                //logger.warn("got null eventInfo .. weird");
+            }
+            Element el = root.addElement("event");
+            if (null != event.getEventStart()) {
+                el.addAttribute("start",dateFormat.format(event.getEventStart()));
+            }
+            if (null != event.getEventEnd()) {
+                el.addAttribute("end",dateFormat.format(event.getEventEnd()));
+                el.addAttribute("isDuration","true");
+            }else {
+                el.addAttribute("isDuration","false");
+            }
+            if (null != event.getTitle()) {
+                el.addAttribute("title",event.getTitle());
+            }
+            if (null != event.getLink()) {
+                el.addAttribute("link",event.getLink().toString());
+            }
+            if (null != event.getDescription()){
+                el.setText(event.getDescription());
+            }
+
+        }
+
+        return DomUtil.domToString(dom).replaceAll("\\n","");
+    }
+
+
+
+
+
+
+    // TODO write javadoc
+    public static class EventInfo {
+    
+        private Date eventStart;
+        private Date eventEnd;
+        private URL link;
+        private String title;
+        private String description;
+
+        public EventInfo(){
+        }
+
+
+        public void setEventStart(Date date){
+            this.eventStart = date;
+        }
+        
+        public void setEventEnd(Date date){
+            this.eventEnd = date;
+        }
+    
+        public void setLink(URL url) {
+            this.link = url;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public void setDescription (String desc) {
+            this.description = desc;
+        }
+
+        public boolean isNull() {
+            return (null == eventStart  &&
+                    null == eventEnd    &&
+                    null == link        &&
+                    null == title       &&
+                    null == description);
+        }
+
+        public Date getEventStart(){
+            return eventStart;
+        }
+        public Date getEventEnd(){
+            return eventEnd;
+        }
+        public String getDescription(){
+            return description;
+        }
+        public String getTitle(){
+            return title;
+        }
+        public URL getLink(){
+            return link;
+        }
+
+
+    }
+
+
+
 }
