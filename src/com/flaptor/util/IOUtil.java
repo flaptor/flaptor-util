@@ -19,12 +19,14 @@ package com.flaptor.util;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +70,29 @@ public class IOUtil {
             buf.append(new String(buffer, 0, bytesRead));
         }
         return buf.toString();
+    }
+
+    /**
+     * reads the last n bytes of a file
+     * @param stream
+     * @param numBytes
+     * @return
+     * @throws IOException
+     */
+    public static byte[] tail(File file, long numBytes) throws IOException {
+        RandomAccessFile raFile = null;
+        try {
+            raFile = new RandomAccessFile(file, "r");
+            long position = raFile.length() - numBytes;
+            if (position < 0) position = 0;
+            raFile.seek(position);
+            byte[] ret = new byte[(int)(raFile.length() - position)];
+            raFile.read(ret);
+            return ret;
+        } finally {
+            if (raFile != null) raFile.close();
+        }
+        
     }
 
     public static void serialize(Object o, OutputStream os) throws IOException {
