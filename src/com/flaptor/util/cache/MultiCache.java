@@ -58,7 +58,7 @@ public class MultiCache<T extends Serializable> {
     public T getItem(final String key) {
         Execution<T> execution= new Execution<T>();
         for (final RemoteCache<T> cache : caches) {
-            execution.getTaskQueue().add(new Callable<T>() {
+            execution.addTask(new Callable<T>() {
                 public T call() throws Exception {
                     return cache.getItem(key);
                 }
@@ -107,7 +107,7 @@ public class MultiCache<T extends Serializable> {
     public boolean hasItem(final String key) {
         Execution<Boolean> execution= new Execution<Boolean>();
         for (final RemoteCache cache : caches) {
-            execution.getTaskQueue().add(new Callable<Boolean>() {
+            execution.addTask(new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     return cache.hasItem(key);
                 }         

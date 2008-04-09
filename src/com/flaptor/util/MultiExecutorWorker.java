@@ -17,6 +17,7 @@ limitations under the License.
 package com.flaptor.util;
 
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.flaptor.util.Execution.Results;
@@ -51,16 +52,17 @@ public class MultiExecutorWorker<T> extends com.flaptor.util.AStoppableThread {
             synchronized(executionQueue) {
                 execution = executionQueue.peek();
                 if (execution == null) {
-                    sleep(10);
+                    sleep(50);
                     continue;
                 }
                 synchronized(execution) {
-                    if (execution.getTaskQueue().isEmpty() || execution.isForgotten()) { 
-                        executionQueue.poll();
-                        execution.notifyAll();
+
+                    task = execution.pollTask();
+
+                    if (execution.hasFinished() || execution.isForgotten() || task == null) {
+                        if (execution.isForgotten()) execution.notifyAll();
+                        execution = executionQueue.poll();
                         continue;
-                    } else {
-                        task = execution.getTaskQueue().poll();
                     }
                 }
             }
@@ -74,8 +76,12 @@ public class MultiExecutorWorker<T> extends com.flaptor.util.AStoppableThread {
             }
             
             synchronized(execution) {
-                execution.getResultsList().add(results);
-                execution.notifyAll();
+                if (!execution.isForgotten()) {
+                    execution.getResultsList().add(results);
+                }
+                if (execution.hasFinished() || execution.isForgotten()) {
+                    execution.notifyAll();
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ public class MultiExecutorTest extends TestCase{
     Integer num = new Integer(0);
     
     @TestInfo(testType = TestInfo.TestType.UNIT)
-    public void testMultiExecutor() {
+    public void testMultiExecutor() throws InterruptedException {
         MultiExecutor<Integer> m = new MultiExecutor<Integer>(5, "hola");
         Execution<Integer> e = new Execution<Integer>();
 
@@ -30,16 +30,11 @@ public class MultiExecutorTest extends TestCase{
                     }
                 }
             };
-            e.getTaskQueue().add(t);
+            e.addTask(t);
             set.add(i+1);
-        }        
-        m.addExecution(e);
-        while(true) {
-            synchronized (e) {
-                if (e.getResultsList().size() == numTasks) break;
-            }
-            try {Thread.sleep(10);} catch (InterruptedException e1) {}
         }
+        m.addExecution(e);
+        e.waitFor(-1);
         for (Execution.Results<Integer> res : e.getResultsList()) {
             assertTrue(res.isFinishedOk());
             assertTrue(set.contains(res.getResults()));
