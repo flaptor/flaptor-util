@@ -10,18 +10,18 @@ import java.util.concurrent.Callable;
  * @author Martin Massera
  */
 public class MultiExecutorTest extends TestCase{
+    private MultiExecutor<Integer> m = new MultiExecutor<Integer>(100, "testMultiExecutor");
     
     Integer num = new Integer(0);
     
     @TestInfo(testType = TestInfo.TestType.UNIT)
     public void testMultiExecutor() throws InterruptedException {
-        MultiExecutor<Integer> m = new MultiExecutor<Integer>(5, "hola");
         Execution<Integer> e = new Execution<Integer>();
 
         Set<Integer> set = new HashSet<Integer>();
         int numTasks = 100;
         for (int i = 0; i < numTasks; ++i){
-            Callable<Integer> t = new Callable<Integer>() {
+            e.addTask(new Callable<Integer>() {
                 public Integer call() throws Exception {
                     Thread.sleep(10);
                     synchronized(num) {
@@ -29,8 +29,7 @@ public class MultiExecutorTest extends TestCase{
                         return num;
                     }
                 }
-            };
-            e.addTask(t);
+            });
             set.add(i+1);
         }
         m.addExecution(e);
@@ -40,6 +39,16 @@ public class MultiExecutorTest extends TestCase{
             assertTrue(set.contains(res.getResults()));
             set.remove(res.getResults());
         }
+        assertEquals(0, e.getProblems().size());
         assertTrue(set.isEmpty());
     }
+    
+    @TestInfo(testType = TestInfo.TestType.UNIT)
+    public void testEmptyExecution() throws InterruptedException {
+        Execution<Integer> e = new Execution<Integer>();
+        m.addExecution(e);
+        e.waitFor();
+        assertTrue(e.hasFinished());
+    }
+    
 }

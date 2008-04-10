@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.Callable;
+
+import com.flaptor.util.Execution.Results;
 
 
 /**
@@ -32,7 +35,7 @@ import java.util.Queue;
  */
 public class MultiExecutor<T> {
 
-    protected List<MultiExecutorWorker<T>> workers = new ArrayList<MultiExecutorWorker<T>>();
+    protected List<Worker> workers = new ArrayList<Worker>();
     protected Queue<Execution<T>> executionQueue = new LinkedList<Execution<T>>();
     
     /**
@@ -44,7 +47,7 @@ public class MultiExecutor<T> {
     public MultiExecutor(int numWorkerThreads, String workerNamePrefix) {
         
         for (int i = 0; i < numWorkerThreads; ++i) {
-            MultiExecutorWorker<T> worker = new MultiExecutorWorker<T>(executionQueue, workerNamePrefix + (i+1));            
+            Worker worker = new Worker(workerNamePrefix + (i+1));
             workers.add(worker);
             worker.start();
         }
@@ -53,13 +56,78 @@ public class MultiExecutor<T> {
      * Adds an execution to the executionQueue
      */
     public void addExecution(Execution<T> e) {
-        executionQueue.add(e);
+        synchronized (executionQueue) {
+            executionQueue.add(e);
+        }
     }
-    
+
     /**
-     * @return the number of executions in queue
+     * A worker thread of the MultiExecutor. It peeks the executions from the queue. 
+     * If the execution is empty it discards it, otherwise it executes the next task 
+     * of that execution
+     *
+     * @param <T> the return type of the execution tasks
+     * 
+     * @author Martin Massera
      */
-    public int getExecutionsLeft() {
-        return executionQueue.size();
+    private class Worker extends com.flaptor.util.AStoppableThread {
+        public Worker(String threadName) {
+            thrd.setName(threadName);
+            thrd.setDaemon(true);
+        }
+
+        public void run() {
+            while (true) {
+                if (signaledToStop) {
+                    stopped = true;
+                    return;
+                }
+                Execution<T> execution = null;
+                Callable<T> task = null;
+                
+                sleep(50);//if this isnt here there is a race condition and can cause starvation when adding tasks
+
+                synchronized(executionQueue) {
+                    execution = executionQueue.peek();
+                    if (execution == null) {
+                        continue;
+                    }
+                    synchronized(execution) {
+                        task = execution.pollTask();
+
+                        //if it has been forgotten or been finished, remove it from the queue and notify
+                        if (execution.hasFinished() || execution.isForgotten()) {
+                            executionQueue.poll();
+                            execution.notifyAll();
+                            continue;
+                        }
+                        //if there ara no more tasks,
+                        //it was the last task, take it out of the queue
+                        if (!execution.hasTasks()) {
+                            executionQueue.poll();
+                        }
+                    }
+                }
+                
+                Results<T> results = new Results<T>(task);
+                try {
+                    results.setResults(task.call());
+                    results.setFinishedOk(true);
+                } catch (Throwable t) {
+                    results.setException(t);
+                }
+                
+                synchronized(execution) {
+                    //dont add results to a forgotten execution
+                    if (!execution.isForgotten()) {
+                        execution.getResultsList().add(results);
+                    }
+                    //if we are done, we notify
+                    if (execution.hasFinished() || execution.isForgotten()) {
+                        execution.notifyAll();
+                    }
+                }
+            }
+        }
     }
 }

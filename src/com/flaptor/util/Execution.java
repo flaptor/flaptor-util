@@ -64,14 +64,16 @@ public class Execution<T> {
 
     public boolean hasFinished() {
         synchronized (executionQueue) {
-            return started && (executionQueue.size() == 0) && popped == resultsList.size();
+            return (executionQueue.size() == 0) && popped == resultsList.size();
         }
     }
 
     public void addTask(Callable<T> task) {
-        if (hasFinished()) throw new IllegalStateException("already finished, cannot add more tasks");
-        if (isForgotten()) throw new IllegalStateException("already forgotten, cannot add more tasks");
-        executionQueue.add(task);
+        synchronized (executionQueue) {
+            if (started) throw new IllegalStateException("already started, cannot add more tasks");
+            if (isForgotten()) throw new IllegalStateException("forgotten, cannot add more tasks");
+            executionQueue.add(task);
+        }
     }
     
     public boolean hasTasks() {
