@@ -108,6 +108,30 @@ public class XmlrpcServer extends AServer {
     }
 
     /**
+     * adds an ip to the list of accepted ips. If addAcceptedClient or addRejectedClient are never called,
+     * the server accepts every connection. Else it accept only the ones that are in the accepted list
+     * and not in the rejected list
+     *  
+     * @param ip an ip, can contain wildcards as in 192.168.*.*
+     */
+    public void addAcceptedClient(String ip) {
+        webserver.setParanoid(true);
+        webserver.acceptClient(ip);
+    }
+
+    /**
+     * adds an ip to the list of rejected ips. If addAcceptedClient or addRejectClient are never called,
+     * the server accepts every connection. Else it accept only the ones that are in the accepted list
+     * and not in the rejected list
+     *  
+     * @param ip an ip, can contain wildcards as in 192.168.*.*
+     */
+    public void addDeniedClient(String ip) {
+        webserver.setParanoid(true);
+        webserver.denyClient(ip);
+    }
+    
+    /**
      * Starts the server in its own thread.
      */
     @Override 
