@@ -17,6 +17,8 @@ limitations under the License.
 package com.flaptor.util.remote;
 
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,8 @@ import org.mortbay.jetty.handler.ResourceHandler;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
+import org.mortbay.xml.XmlConfiguration;
+import org.xml.sax.SAXException;
 
 import com.flaptor.util.FileUtil;
 import com.flaptor.util.remote.AServer.RunningState;
@@ -90,6 +94,13 @@ public class WebServer extends AServer {
 	public WebServer(final int p) {
 	    super(p);
 		webserver = new Server(port);
+        XmlConfiguration configuration;
+        try {
+            configuration = new XmlConfiguration(ClassLoader.getSystemClassLoader().getResource("jetty.xml"));
+            configuration.configure(webserver);
+        } catch (Throwable  t) {
+            logger.warn("problem configuring jetty", t);
+        }
 	}
 
 	/**
