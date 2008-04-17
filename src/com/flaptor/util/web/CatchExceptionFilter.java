@@ -40,7 +40,7 @@ public class CatchExceptionFilter implements Filter
         }
         catch (Throwable t)
         {
-            logger.warn("Exception caught", t);
+            logger.error("Exception caught", t);
             request.setAttribute("message", t.getMessage());
             request.setAttribute("stacktrace", IOUtil.getStackTrace(t));
             request.getRequestDispatcher(errorPage).forward(request, response);
