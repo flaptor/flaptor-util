@@ -26,11 +26,6 @@ import java.net.URLEncoder;
 public final class StringUtil {
     
     /**
-     * Private empty default constructor to prevent inheritance and instantiation.
-     */
-    private StringUtil() {}
-
-    /**
      * Returns an empty string if a string variable null.
      * @param text the string to evaluate
      * @return "" if the argument is <code>null</code>
