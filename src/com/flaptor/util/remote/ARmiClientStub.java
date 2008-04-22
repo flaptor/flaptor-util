@@ -54,12 +54,11 @@ public abstract class ARmiClientStub extends AClientStub {
     }
 
     private void connect() throws RemoteException{
-    
         logger.debug("connecting to " + host + ":" + port);
     	Remote remote = RmiUtil.getRemoteService(host, port, serviceName);
     	if (null != remote) {
-    	    remoteInitialized = true;
     		this.setRemote(remote);
+            remoteInitialized = true;
     	} else {
     		logger.error("Could not get remote service: " + serviceName + "@" + host + ":" + port);
     		throw new RemoteException("Could not get remote service: " + serviceName + "@" + host + ":" + port);
@@ -68,7 +67,9 @@ public abstract class ARmiClientStub extends AClientStub {
 
 
     public void checkConnection() throws RemoteException{
-        if (policy.reconnect()) {
+        boolean reconnect = policy.reconnect() || !remoteInitialized;
+//        System.out.println(this + " " + reconnect);
+        if (reconnect) {
             try {
                 connect();
             } catch (RemoteException e) {
@@ -76,7 +77,8 @@ public abstract class ARmiClientStub extends AClientStub {
                 throw e;
             }
         }
-
+//        System.out.println(this + " " + reconnect + " " + remoteInitialized + " ");
+        
         // If policy does not allow to connect
         if (!policy.callServer())  {
             // if we have to wait for the policy to allow us

@@ -34,11 +34,6 @@ public final class DomUtil {
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
 
     /**
-     * Private empty default constructor to prevent inheritance and instiantiation.
-     */
-    private DomUtil() {}
-
-    /**
      * Returns a pretty string representation of a dom.
      * @param doc the dom to be stringified
      * @return the string representation of the document
