@@ -17,7 +17,6 @@ limitations under the License.
 package com.flaptor.util.remote;
 
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +34,8 @@ import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.xml.XmlConfiguration;
-import org.xml.sax.SAXException;
 
 import com.flaptor.util.FileUtil;
-import com.flaptor.util.remote.AServer.RunningState;
 
 /**
  * A WebServer to manage a single jetty AbstractHandler.
@@ -95,8 +92,14 @@ public class WebServer extends AServer {
 	    super(p);
 		webserver = new Server(port);
         XmlConfiguration configuration;
+        String jettyCfg="jetty.xml";
         try {
-            configuration = new XmlConfiguration(ClassLoader.getSystemClassLoader().getResource("jetty.xml"));
+            URL cfgJtty = ClassLoader.getSystemClassLoader().getResource(jettyCfg);
+            if (cfgJtty == null){
+                logger.info("Seems like " + jettyCfg + " can't be found/loaded. Let's continue any way.");
+                return;
+            }
+            configuration = new XmlConfiguration(cfgJtty);
             configuration.configure(webserver);
         } catch (Throwable  t) {
             logger.warn("problem configuring jetty", t);

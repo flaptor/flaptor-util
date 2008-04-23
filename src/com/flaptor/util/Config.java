@@ -18,6 +18,7 @@ package com.flaptor.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -479,6 +480,27 @@ public class Config implements Serializable{
 
         Execute.close(is);
         return p;
+    }
+    
+    /**
+     * Creates a config from a string. The string format is the same as a 
+     * config/properties file.
+     * @param cfg
+     * @return
+     */
+    public static Config getConfigFromString(String cfg){        
+        Config res= getEmptyConfig();
+        ClassLoader loader= res.getClass().getClassLoader();
+        InputStream is= new ByteArrayInputStream(cfg.getBytes());
+        Properties p = null;
+        try {
+            p = res.readFromStream(is, loader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        res.prop=p;
+        Execute.close(is);
+        return res;     
     }
     
     private synchronized Properties readFromStream(InputStream is, ClassLoader loader) throws IOException{
