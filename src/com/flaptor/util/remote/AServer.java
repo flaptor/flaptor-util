@@ -128,7 +128,7 @@ public abstract class AServer implements Stoppable {
             }
         };
 
-        stopperThread.setName(this.getClass().getName() + "-StopperTread");
+        stopperThread.setName(this.getClass().getName() + "-StopperThread");
         stopperThread.start();
     }
 
