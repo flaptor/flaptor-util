@@ -37,7 +37,7 @@ import com.flaptor.hist4j.AdaptiveHistogram;
  * 
  * @author Martin Massera
  */
-public class Statistics {
+public class Statistics implements Serializable {
     private static final Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());
 	private static final Statistics instance;
 	
