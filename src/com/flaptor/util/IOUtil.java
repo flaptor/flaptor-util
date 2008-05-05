@@ -71,6 +71,21 @@ public class IOUtil {
         }
         return buf.toString();
     }
+    /**
+     * fully reads a stream
+     * @return a string with all the contents of the stream 
+     * @throws IOException 
+     */
+    public static byte[] readAllBinary(InputStream stream) throws IOException {
+        ByteArrayOutputStream o = new ByteArrayOutputStream();
+        byte[] buffer = new byte[256];
+        while(true) {
+            int bytesRead = stream.read(buffer);
+            if (bytesRead == -1) break;
+            o.write(buffer);
+        }
+        return o.toByteArray();
+    }
 
     /**
      * reads the last n bytes of a file
