@@ -83,16 +83,24 @@ public class WebServer extends AServer {
 	}
 
 	/**
-	 * Constructor.
+	 * Constructor. Will try to load configuration from jetty.xml in the classpath
 	 * 
-	 * @param h the objet to handle the requests.
 	 * @param p the port on which to listen
 	 */
 	public WebServer(final int p) {
-	    super(p);
-		webserver = new Server(port);
+	    this(p, "jetty.xml");
+	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param p the port on which to listen
+	 * @param jettyCfg the name of the jetty configuration file
+	 */
+	public WebServer(final int p, final String jettyCfg) {
+        super(p);
+        webserver = new Server(port);
         XmlConfiguration configuration;
-        String jettyCfg="jetty.xml";
         try {
             URL cfgJtty = ClassLoader.getSystemClassLoader().getResource(jettyCfg);
             if (cfgJtty == null){
@@ -104,7 +112,7 @@ public class WebServer extends AServer {
         } catch (Throwable  t) {
             logger.warn("problem configuring jetty", t);
         }
-	}
+    }
 
 	/**
 	 * adds a handler to the server
