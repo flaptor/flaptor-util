@@ -18,13 +18,13 @@ public class MemFileCache<T> {
         fileCache = new FileCache<T>(fileCacheDir);
     }
     
-    T get(String key) {
+    public T get(String key) {
         T val = memCache.get(key);
         if (val != null) return val;
         else return fileCache.getItem(key);
     }
 
-    void put(String key, T value) {
+    public void put(String key, T value) {
         memCache.put(key, value);
         fileCache.addItem(key, value);
     }
