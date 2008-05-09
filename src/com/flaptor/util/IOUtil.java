@@ -20,6 +20,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,6 +119,18 @@ public class IOUtil {
     	oos.flush();
     }
 
+    /**
+     * method for quick serialization of an object
+     * @param o
+     * @param file
+     */
+    public static void serialize(Object o, String file) {
+        try {
+            serialize(o, new FileOutputStream(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     public static byte[] serialize(Object o) {
     	try { 
@@ -127,8 +142,28 @@ public class IOUtil {
     	}
     }
 
-    public static Object deserialize(InputStream is) throws IOException, ClassNotFoundException {
-    	return new ObjectInputStream(is).readObject();
+
+    /**
+     * quick deserializing from a file, to use with serialize(object, file)
+     * @param file
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static Object deserialize(String file){
+        try {
+            return deserialize(new FileInputStream(file));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Object deserialize(InputStream is) {
+    	try {
+            return new ObjectInputStream(is).readObject();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
    	public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
