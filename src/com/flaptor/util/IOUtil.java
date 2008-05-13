@@ -197,7 +197,18 @@ public class IOUtil {
    	    }
    	}
    	
-   	
+   	/**
+   	 * returns an iterable (for use in fors) for iterating over the lines of a file.
+   	 * The difference with readLines is that readLines reads the entire file and this reads the stream
+   	 * when requested. Use this for very big files. 
+   	 * 
+   	 * @param toLowerCase
+   	 * @param trim
+   	 * @param emptyLines
+   	 * @param reader
+   	 * @return
+   	 * @throws IOException
+   	 */
    	public static Iterable<String> lineIterable(final boolean toLowerCase, final boolean trim, final boolean emptyLines, final Reader reader) throws IOException {
    	    final BufferedReader br = new BufferedReader(reader);
    	    return new Iterable<String>() {
