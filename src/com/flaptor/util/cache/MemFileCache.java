@@ -21,6 +21,11 @@ public class MemFileCache<T> implements Iterable<Pair<String, T>>{
         fileCache = new FileCache<T>(fileCacheDir);
     }
     
+    public void remove(String key) {
+    	memCache.put(key, null);
+    	fileCache.removeItem(key);
+    }
+    
     public T get(String key) {
         T val = memCache.get(key);
         if (val != null) return val;

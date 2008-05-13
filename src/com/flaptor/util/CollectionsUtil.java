@@ -18,9 +18,12 @@ package com.flaptor.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Utility methods for Collections API
@@ -113,6 +116,46 @@ public class CollectionsUtil {
         }
     }
 
+    /**
+     * transforms a map into an ordered list of its entries
+     * @param map
+     * @param comparator
+     * @return
+     */
+    public static <K,V> List<Entry<K,V>> order(Map<K,V> map, java.util.Comparator<Entry<K,V>> comparator) {
+		List<Entry<K,V>> list = new ArrayList<Entry<K,V>>(map.entrySet());
+		Collections.sort(list, comparator);
+		return list;
+    }
 
-
+    /**
+     * orders the entries by value
+     * @param <K>
+     * @param <V>
+     * @param map
+     * @param desc
+     * @return
+     */
+    public static <K,V extends Comparable<V>> List<Entry<K,V>> orderByValue(Map<K,V> map, final boolean desc){
+    	return order(map, new Comparator<Entry<K,V>>() {
+			public int compare(Entry<K, V> o1, Entry<K, V> o2) {
+				return (desc ? -1 : 1) * o1.getValue().compareTo(o2.getValue());
+			}
+    	});
+    }
+    /**
+     * orders the entries by key
+     * @param <K>
+     * @param <V>
+     * @param map
+     * @param desc
+     * @return
+     */
+    public static <K extends Comparable<K>,V> List<Entry<K,V>> orderByKey(Map<K,V> map, final boolean desc){
+    	return order(map, new Comparator<Entry<K,V>>() {
+			public int compare(Entry<K, V> o1, Entry<K, V> o2) {
+				return (desc ? -1 : 1) * o1.getKey().compareTo(o2.getKey());
+			}
+    	});
+    }
 }
