@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -194,5 +195,41 @@ public class IOUtil {
    	        if (!emptyLines && line.length() == 0) continue;
    	        ret.add(line);
    	    }
+   	}
+   	
+   	
+   	public static Iterable<String> lineIterable(final boolean toLowerCase, final boolean trim, final boolean emptyLines, final Reader reader) throws IOException {
+   	    final BufferedReader br = new BufferedReader(reader);
+   	    return new Iterable<String>() {
+            String nextLine = getNextLine();
+            String getNextLine() throws IOException{
+                String line = null;
+                boolean done = false;
+                while (!done){
+                    line = br.readLine();
+                    if (line == null) done = true;
+                    if (trim) line = line.trim();
+                    if (emptyLines || line.length() > 0) done = true;
+                }
+                return line;
+            }
+            public Iterator<String> iterator() {
+                return new Iterator<String>() {
+                    public boolean hasNext() {
+                        return nextLine != null;
+                    }
+                    public String next() {
+                        String line = nextLine;
+                        try {
+                            nextLine = getNextLine();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return line;
+                    }
+                    public void remove() {throw new UnsupportedOperationException("remove not supported");}
+                };
+            }
+   	    };
    	}
 }

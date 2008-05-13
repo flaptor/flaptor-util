@@ -17,6 +17,7 @@ package com.flaptor.util.cache;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -345,7 +346,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
             try {
                 File file = getAssociatedFile(key);
                 if (!file.exists()) {
-                    logger.warn("There is no cache item for this key: " + key + " (" + digester.getDigest(key) + ")");
+                    logger.debug("There is no cache item for this key: " + key + " (" + digester.getDigest(key) + ")");
                 } else {
                     boolean ok = false;
 
@@ -369,8 +370,11 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
                                 }
                             }
                         }
+                    } catch (EOFException e) {
+                        logger.error("data incomplete for " + key + " - deleting", e);
+                        removeItem(key);
                     } catch (IOException e) {
-                        logger.error("Getting an item from the cache", e);
+                        logger.error("Getting " + key + " from the cache", e);
                     } finally {
                         try { if (null != stream) stream.close(); } catch (IOException e) {}
                     }
