@@ -1,5 +1,7 @@
 package com.flaptor.util.apis;
 
+import java.io.Serializable;
+
 /**
  * represents a geographic position. Can be a country (locality = null) 
  * or a locality (locality != null)
@@ -7,7 +9,7 @@ package com.flaptor.util.apis;
  * 
  * @author Martin Massera
  */
-public class Geocode {
+public class Geocode implements Serializable {
     private String locality;
     private String country;
     private double[] latLong;
