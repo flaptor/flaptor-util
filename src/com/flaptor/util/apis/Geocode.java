@@ -13,9 +13,9 @@ public class Geocode {
     private double[] latLong;
     
     public Geocode() {}
-    public Geocode(String locality, String country, double[] latLong) {
-        this.locality = locality;
+    public Geocode(String country, String locality, double[] latLong) {
         this.country = country;
+        this.locality = locality;
         this.latLong = latLong;
     }
     
@@ -39,7 +39,9 @@ public class Geocode {
     }
 
     public int hashCode() {
-        return country.hashCode() + locality != null ? locality.hashCode() : 0;
+        return 
+            country.hashCode() + 
+            ((locality != null) ? locality.hashCode() : 0);
     }
     public boolean equals(Object obj) {
         if (!(obj instanceof Geocode)) return false;
@@ -47,5 +49,12 @@ public class Geocode {
         if (!country.equals(code.country)) return false;
         if (locality == null) return code.locality == null;
         else return locality.equals(code.locality);
+    }
+    
+    @Override
+    public String toString() {
+        return country + 
+            ((locality != null) ? ("->" + locality) : ""); 
+//            +((latLong != null) ? (" ("+latLong[0] + ","+latLong[1]+")") : "");
     }
 }
