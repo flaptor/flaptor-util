@@ -158,4 +158,16 @@ public class CollectionsUtil {
 			}
     	});
     }
+    
+    /**
+     * given a map of ? -> Integer counting occurrences, this adds one to the occurrence
+     * @param <T>
+     * @param map
+     * @param key
+     */
+    public static <T> void addOne(Map<T,Integer> map, T key) {
+        Integer count = map.get(key);
+        if (count == null) count = 0;
+        map.put(key, count + 1);
+    }
 }

@@ -215,12 +215,11 @@ public class IOUtil {
             String nextLine = getNextLine();
             String getNextLine() throws IOException{
                 String line = null;
-                boolean done = false;
-                while (!done){
+                while (true){
                     line = br.readLine();
-                    if (line == null) done = true;
+                    if (line == null) break;
                     if (trim) line = line.trim();
-                    if (emptyLines || line.length() > 0) done = true;
+                    if (emptyLines || line.length() > 0) break;
                 }
                 return line;
             }
