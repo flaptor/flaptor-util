@@ -24,4 +24,13 @@ public interface GoogleGeo {
      * @return
      */
     public String getGeocodingXml(final String place);
+
+    /**
+     * same as getGeocode but only from cache (no google)
+     */
+    public Geocode getGeocodeCache(String place);
+    /**
+     * same as getGeocodingXmlCache but only from cache (no google)
+     */
+    public String getGeocodingXmlCache(final String place);
 }

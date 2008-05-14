@@ -49,42 +49,53 @@ public class GoogleGeoImpl implements GoogleGeo {
 		return geoCache;
 	}
 	
-	public Geocode getGeocode(String place) {
+    public Geocode getGeocodeCache(String place) {
+        String xml = getGeocodingXmlCache(place);        
+        if (xml != null) return parse(xml);
+        else return null; 
+    }
+    public String getGeocodingXmlCache(String place) {
+        return geoCache.get(place);
+    }
+    public Geocode getGeocode(String place) {
 	    String xml = getGeocodingXml(place);
 	    if (xml != null) return parse(xml);
 	    else return null; 
 	}
-	
 	public String getGeocodingXml(final String place) {
-	    String ret = geoCache.get(place);
-		if (ret == null) {
-			synchronized (this) {
-				HttpClient client = new HttpClient();
-				String url = "http://maps.google.com/maps/geo?q="+StringUtil.urlEncode(place) + "&output=xml&key=" + key;
-				GetMethod get = new GetMethod(url);
-				logger.info("retrieving " + place);
-				System.out.println("retrieving " + place);
+	    String ret = getGeocodingXmlCache(place);
+		if (ret != null) return ret;
+		
+		synchronized (this) {
+			HttpClient client = new HttpClient();
+			String url = "http://maps.google.com/maps/geo?q="+StringUtil.urlEncode(place) + "&output=xml&key=" + key;
+			GetMethod get = new GetMethod(url);
+			logger.info("retrieving " + place);
+			System.out.println("retrieving " + place);
 
-				//enforce the 1 request/1.750 sec limit
-                while (System.currentTimeMillis() - lastCall < 1750) {
-                    ThreadUtil.sleep(50);
-                }
-                try {
-					int status = client.executeMethod(get);
-					if (status !=  200) throw new Exception("http request failed - status " + status);
-					ret = IOUtil.readAll(get.getResponseBodyAsStream());
-					get.releaseConnection();
-
-				} catch (Exception e) {
-					logger.warn(e,e);
-					return null;
-				} finally {
-	                lastCall = System.currentTimeMillis();
-				}
-				geoCache.put(place, ret);
+			//enforce the 1 request/1.750 sec limit
+            while (System.currentTimeMillis() - lastCall < 1750) {
+                ThreadUtil.sleep(50);
+            }
+            try {
+				int status = client.executeMethod(get);
+				if (status !=  200) throw new Exception("http request failed - status " + status);
+				ret = IOUtil.readAll(get.getResponseBodyAsStream());
+				get.releaseConnection();
+			} catch (Exception e) {
+				logger.warn(e,e);
+				return null;
+			} finally {
+                lastCall = System.currentTimeMillis();
 			}
+
+	        if (checkGoodStatus(place, ret)) {
+                geoCache.put(place, ret);
+	            return ret; 
+	        } else {
+	            return null;
+	        }
 		}
-		if (checkGoodStatus(place, ret)) return ret; else return null;
 	}
 	
 	/**
