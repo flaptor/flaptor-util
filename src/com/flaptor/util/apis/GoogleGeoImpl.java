@@ -43,6 +43,7 @@ public class GoogleGeoImpl implements GoogleGeo {
 
 	public GoogleGeoImpl(String cacheDir, String key) {
 		geoCache = new MemFileCache<String>(50000, cacheDir);
+		this.key = key;
 	}
 	
 	public MemFileCache<String> getCache() {
@@ -55,23 +56,24 @@ public class GoogleGeoImpl implements GoogleGeo {
         else return null; 
     }
     public String getGeocodingXmlCache(String place) {
-        return geoCache.get(place);
+        return geoCache.get(place.toLowerCase());
     }
     public Geocode getGeocode(String place) {
 	    String xml = getGeocodingXml(place);
 	    if (xml != null) return parse(xml);
 	    else return null; 
 	}
-	public String getGeocodingXml(final String place) {
+	public String getGeocodingXml(String place) {
+	    place = place.toLowerCase();
 	    String ret = getGeocodingXmlCache(place);
 		if (ret != null) return ret;
 		
 		synchronized (this) {
 			HttpClient client = new HttpClient();
-			String url = "http://maps.google.com/maps/geo?q="+StringUtil.urlEncode(place) + "&output=xml&key=" + key;
+			String url = "http://maps.google.com/maps/geo?q="+StringUtil.urlEncode(place) + "&output=xml&key=" + "ABQIAAAANsiYczUO4OKBi4ERs1tMGxS3wM4UOGmx-u_A5H5NKh1NS56MdRTDtJ0TDy_CC1KY2AhY0D8eC9IjzQ";
+			
 			GetMethod get = new GetMethod(url);
-			logger.info("retrieving " + place);
-			System.out.println("retrieving " + place);
+			logger.debug("retrieving " + place);
 
 			//enforce the 1 request/1.750 sec limit
             while (System.currentTimeMillis() - lastCall < 1750) {
@@ -103,7 +105,7 @@ public class GoogleGeoImpl implements GoogleGeo {
 	 */
 	public void clean() {
        for (Pair<String,String> e : geoCache) {
-           checkGoodStatus(e.first(), e.last());
+           if (!checkGoodStatus(e.first(), e.last())) continue;
         }
 	}
 	
@@ -132,7 +134,7 @@ public class GoogleGeoImpl implements GoogleGeo {
             case 601:
             case 610:
             case 620:
-                System.out.println("removing code " + code + ": " +place); 
+                logger.debug("removing " + place + " - code " + code); 
                 geoCache.remove(place);
                 return false;
         }
@@ -175,11 +177,6 @@ public class GoogleGeoImpl implements GoogleGeo {
 	}
 	
 	public static void main(String[] args) {
-	    new GoogleGeoImpl("/home/marto/geocache","ABQIAAAANsiYczUO4OKBi4ERs1tMGxS3wM4UOGmx-u_A5H5NKh1NS56MdRTDtJ0TDy_CC1KY2AhY0D8eC9IjzQ")
-	    .clean();
-
-//	    System.out.println(
-//	        new GoogleGeocoding("/home/marto/geocache","ABQIAAAANsiYczUO4OKBi4ERs1tMGxS3wM4UOGmx-u_A5H5NKh1NS56MdRTDtJ0TDy_CC1KY2AhY0D8eC9IjzQ")
-//            .getGeocodingXml("AR"));
+        new GoogleGeoImpl("/home/marto/geocache", "hola").clean();
     }
 }
