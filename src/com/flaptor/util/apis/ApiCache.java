@@ -1,5 +1,7 @@
 package com.flaptor.util.apis;
 
+import java.rmi.Remote;
+
 import org.apache.log4j.Logger;
 
 import com.flaptor.util.Execute;
@@ -13,8 +15,9 @@ import com.flaptor.util.remote.RmiServer;
  */
 public class ApiCache extends RmiServer {
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
-    public ApiCache(int port) {
+    public ApiCache(int port, String geocacheDir, String geocacheKey) {
         super(port);
+        addHandler("googleGeo", RmiCodeGeneration.remoteHandler("googleGeo", new Class[] {GoogleGeo.class}, new GoogleGeoImpl(geocacheDir,geocacheKey)));
     }
 
     public static void main(String[] args) {
@@ -23,10 +26,8 @@ public class ApiCache extends RmiServer {
             System.exit(-1);
         }
         int port = Integer.parseInt(args[0]);
-        ApiCache apiCache = new ApiCache(port);
-        apiCache.addHandler("googleGeo", RmiCodeGeneration.remoteHandler("googleGeo", new Class[] {GoogleGeo.class}, new GoogleGeoImpl(args[1],args[2])));
-        apiCache.start();
         logger.info("starting apicache on port " + port);
+        new ApiCache(port, args[1], args[2]).start();
     }
     
     public static GoogleGeo getGoogleGeo(String host, int port) {

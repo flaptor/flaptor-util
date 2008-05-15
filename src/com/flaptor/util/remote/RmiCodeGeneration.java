@@ -11,8 +11,10 @@ import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javassist.ClassPool;
@@ -33,6 +35,7 @@ public class RmiCodeGeneration {
     private static Logger logger = Logger.getLogger(Execute.whoAmI());
     private static final Map<String, Class> classMap = new HashMap<String, Class>(); 
     
+    private static final Set<Method> objectMethods = new HashSet<Method>(Arrays.asList(Object.class.getMethods()));
     /**
      * it gives you an object with the same methods as the original one,
      * but implementing Remote and throwing RemoteException in all its methods. 
@@ -55,7 +58,10 @@ public class RmiCodeGeneration {
             
             InvocationHandler handler = new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    Method originalMethod = methodMap.get(method);
+                    if (objectMethods.contains(method)) { //execute Object methods (toString, etc.)
+                        return method.invoke(originalHandler, args);
+                    } 
+                    Method originalMethod = methodMap.get(method);;
                     logger.debug("invoking original method " + originalMethod + " for " + method);
                     try {
                         return originalMethod.invoke(originalHandler, args);
@@ -82,7 +88,6 @@ public class RmiCodeGeneration {
             if (handlerInterface == null) {
                 CtClass generatedInterf = cp.makeInterface(remoteClassName);
                 generatedInterf.setSuperclass(cp.get(Remote.class.getCanonicalName()));
-                List<Method> objectMethods = Arrays.asList(Object.class.getMethods());
                 for (Class interf : interfaces) {
                     for (Method method : interf.getMethods()) {
                         if (objectMethods.contains(method)) {

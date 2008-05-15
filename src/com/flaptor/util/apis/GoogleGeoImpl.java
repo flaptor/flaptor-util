@@ -22,6 +22,7 @@ import com.flaptor.util.Pair;
 import com.flaptor.util.SaxUtil;
 import com.flaptor.util.StringUtil;
 import com.flaptor.util.ThreadUtil;
+import com.flaptor.util.cache.FileCache;
 import com.flaptor.util.cache.MemFileCache;
 import com.flaptor.util.xml.SaxStackHandler;
 
@@ -42,7 +43,7 @@ public class GoogleGeoImpl implements GoogleGeo {
 	private String key;
 
 	public GoogleGeoImpl(String cacheDir, String key) {
-		geoCache = new MemFileCache<String>(50000, cacheDir);
+		geoCache = new MemFileCache<String>(50000, cacheDir, 3);
 		this.key = key;
 	}
 	
@@ -64,6 +65,8 @@ public class GoogleGeoImpl implements GoogleGeo {
 	    else return null; 
 	}
 	public String getGeocodingXml(String place) {
+        logger.debug(place);
+
 	    place = place.toLowerCase();
 	    String ret = getGeocodingXmlCache(place);
 		if (ret != null) return ret;
@@ -103,9 +106,12 @@ public class GoogleGeoImpl implements GoogleGeo {
 	/**
 	 * removes all entries with bad status codes
 	 */
+	FileCache<String> m = new FileCache<String>("/home/marto/geocache", 3);
 	public void clean() {
        for (Pair<String,String> e : geoCache) {
            if (!checkGoodStatus(e.first(), e.last())) continue;
+           geoCache.remove(e.first());
+           m.addItem(e.first(), e.last());
         }
 	}
 	

@@ -17,8 +17,11 @@ public class MemFileCache<T> implements Iterable<Pair<String, T>>{
     final private LRUCache<String, T> memCache;
     
     public MemFileCache(int memCacheMaxSize, String fileCacheDir) {
+        this(memCacheMaxSize, fileCacheDir, 2);
+    }
+    public MemFileCache(int memCacheMaxSize, String fileCacheDir, int fileCacheLevels) {
         memCache = new LRUCache<String, T>(memCacheMaxSize);
-        fileCache = new FileCache<T>(fileCacheDir);
+        fileCache = new FileCache<T>(fileCacheDir, fileCacheLevels);
     }
     
     public void remove(String key) {

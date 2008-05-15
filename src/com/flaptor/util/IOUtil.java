@@ -189,7 +189,10 @@ public class IOUtil {
    	    BufferedReader bufferedReader = new BufferedReader(reader);
    	    while (true) {
    	        String line = bufferedReader.readLine();
-   	        if (line == null) return ret;
+   	        if (line == null) {
+   	            bufferedReader.close();
+   	            return ret;
+   	        }
    	        if (toLowerCase) line = line.toLowerCase();
    	        if (trim) line = line.trim();
    	        if (!emptyLines && line.length() == 0) continue;
@@ -232,6 +235,7 @@ public class IOUtil {
                         String line = nextLine;
                         try {
                             nextLine = getNextLine();
+                            if (nextLine == null) br.close();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
