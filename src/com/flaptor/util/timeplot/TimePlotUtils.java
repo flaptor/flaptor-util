@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.net.URL;
 
@@ -58,7 +59,8 @@ public class TimePlotUtils {
      * @param source A {@link Map} from {@link Date} to {@link List<Number>} with the values for each checkpoint.  
      * @param rowSeparator The string that will be put between rows (depending on the type of output, a different separator can be used) 
      * @return The String dataset
-     */    public static String generateInputDate(Map<Date, List<Number>> source, String rowSeparator) {
+     */
+    public static String generateInputDate(Map<Date, List<Number>> source, String rowSeparator) {
         return generateInputDate(source, 5, rowSeparator);
     }
         
@@ -83,7 +85,7 @@ public class TimePlotUtils {
         String pattern = "0" + (precisionDecimals == 0 ? "" : ".") + new String(decimals);
         
         DecimalFormat decimalFormat = new DecimalFormat(pattern);
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
         
         List<Date> dates = Lists.sortedCopy(source.keySet());
         
