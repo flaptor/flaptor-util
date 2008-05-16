@@ -34,6 +34,10 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+import com.google.common.collect.Lists;
 
 /**
  * utility class for common IO operations
@@ -114,10 +118,20 @@ public class IOUtil {
         
     }
 
-    public static void serialize(Object o, OutputStream os) throws IOException {
+    public static void serialize(Object o, OutputStream os, boolean compress) throws IOException {
+        GZIPOutputStream gos = null;
+        if (compress) {
+            gos = new GZIPOutputStream(os);
+            os = gos;
+        }
     	ObjectOutputStream oos = new ObjectOutputStream(os);
     	oos.writeObject(o);
     	oos.flush();
+    	oos.close();
+    	if (gos != null) {
+    	    gos.flush();
+    	    gos.close();
+    	}
     }
 
     /**
@@ -125,18 +139,23 @@ public class IOUtil {
      * @param o
      * @param file
      */
-    public static void serialize(Object o, String file) {
+    public static void serialize(Object o, String file, boolean compress) {
         try {
-            serialize(o, new FileOutputStream(file));
+            FileOutputStream fos = new FileOutputStream(file);
+            serialize(o, fos, compress);
+            fos.flush();
+            fos.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public static byte[] serialize(Object o) {
+    public static byte[] serialize(Object o, boolean compress) {
     	try { 
 	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-	    	serialize(o, out);
+	    	serialize(o, out, compress);
+	    	out.flush();
+	    	out.close();
 	    	return out.toByteArray();
     	} catch (IOException e) { //this exception should not happen
     		throw new RuntimeException(e);
@@ -151,25 +170,38 @@ public class IOUtil {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static Object deserialize(String file){
+    public static Object deserialize(String file, boolean compressed){
+        FileInputStream fileInputStream = null;
         try {
-            return deserialize(new FileInputStream(file));
+            fileInputStream = new FileInputStream(file);
+            Object obj = deserialize(fileInputStream, compressed);
+            fileInputStream.close();
+            return obj;
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
+        } 
     }
 
-    public static Object deserialize(InputStream is) {
+    public static Object deserialize(InputStream is, boolean compressed) {
     	try {
-            return new ObjectInputStream(is).readObject();
+    	    GZIPInputStream gis = null;
+    	    if (compressed) {
+    	        gis = new GZIPInputStream(is);
+    	        is = gis;
+    	    }
+    	    Object obj = new ObjectInputStream(is).readObject();
+    	    if (gis!=null) gis.close();
+    	    return obj;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-   	public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
+   	public static Object deserialize(byte[] bytes, boolean compressed) throws IOException, ClassNotFoundException {
     	ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-    	return deserialize(bis);
+    	Object obj = deserialize(bis, compressed);
+    	bis.close();
+    	return obj;
     }
    	
    	public static String getStackTrace(Throwable t) {
@@ -246,4 +278,10 @@ public class IOUtil {
             }
    	    };
    	}
+   	
+   	public static void main(String[] args) throws IOException, ClassNotFoundException {
+        
+   	    byte[] bytes = IOUtil.serialize(Lists.newArrayList(1,2,3,4,5), true);
+   	    System.out.println(IOUtil.deserialize(bytes, true));
+    }
 }

@@ -62,7 +62,7 @@ public class XmlrpcClientTest extends TestCase {
 
         server.addHandler("context2", XmlrpcSerialization.handler(new ComplexServiceImpl()));
         byte[] pairByteArray = (byte[]) client.execute("context2", "method", new Object[] { new Pair<Integer, Integer>(1, 1) });
-        Pair<String, String> pair = (Pair<String, String>) IOUtil.deserialize(pairByteArray);
+        Pair<String, String> pair = (Pair<String, String>) IOUtil.deserialize(pairByteArray, false);
         assertEquals(pair.first(), pair.last());
         assertEquals(pair.first(), "1");
 

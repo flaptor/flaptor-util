@@ -123,7 +123,7 @@ public class XmlrpcSerialization {
 						Object[] newArgs = new Object[args.length];
 						for (int i = 0; i < newArgs.length; i++) {
 							if (originalMethodInfo.third()[i]) {
-								newArgs[i] = IOUtil.deserialize((byte[])args[i]);
+								newArgs[i] = IOUtil.deserialize((byte[])args[i], false);
 							} else {
 								newArgs[i] = args[i];
 							}
@@ -132,7 +132,7 @@ public class XmlrpcSerialization {
 						Object ret = originalMethodInfo.first().invoke(originalHandler, newArgs);
 						if (originalMethodInfo.second()) {
 							logger.debug("serializing return: " + ret);
-							ret = IOUtil.serialize(ret);
+							ret = IOUtil.serialize(ret, false);
 						}
 						return ret;
 					} catch (InvocationTargetException e) {

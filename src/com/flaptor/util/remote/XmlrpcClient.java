@@ -70,7 +70,7 @@ public class XmlrpcClient {
 		Vector<Object> v = new Vector<Object>();
 		for (Object o: params) {
 			if (XmlrpcSerialization.isSupportedClass(o)) v.add(o);
-			else v.add(IOUtil.serialize(o));
+			else v.add(IOUtil.serialize(o, false));
 		}
 		
 		Object ret;
@@ -128,7 +128,7 @@ public class XmlrpcClient {
 				if (XmlrpcSerialization.isSupportedClass(method.getReturnType())) {
 					return ret;
 				} else {
-					return IOUtil.deserialize((byte[])ret);
+					return IOUtil.deserialize((byte[])ret, false);
 				}
 			}
 		};
