@@ -62,7 +62,7 @@ public class GoogleGeoImpl implements GoogleGeo {
     public Geocode getGeocode(String place) {
 	    String xml = getGeocodingXml(place);
 	    if (xml != null) return parse(xml);
-	    else return null; 
+	    else return null;
 	}
 	public String getGeocodingXml(String place) {
         logger.debug(place);
@@ -178,7 +178,11 @@ public class GoogleGeoImpl implements GoogleGeo {
             logger.error(e);
             return null;
         }
-        if (valid[0]) return placeInfo;
+        if (valid[0]) {
+            //if no country we return null;
+            if (placeInfo.getCountry() != null) return placeInfo;
+            else return null; 
+        }
         else return null; 
 	}
 	

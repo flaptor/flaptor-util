@@ -56,7 +56,7 @@ public class Geocode implements Serializable {
     @Override
     public String toString() {
         return country + 
-            ((locality != null) ? ("->" + locality) : ""); 
+            ((locality != null) ? ("." + locality) : ""); 
 //            +((latLong != null) ? (" ("+latLong[0] + ","+latLong[1]+")") : "");
     }
 }
