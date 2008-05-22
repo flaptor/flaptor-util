@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * This class provides best-practice execution patterns to some common commands.
@@ -37,6 +38,18 @@ public final class Execute {
 
     private static final Logger defaultLogger = Logger.getLogger(Execute.whoAmI());
 
+    /**
+     * Configures Log4j
+     */
+    public static void configureLog4j() {
+        String log4jConfigPath = FileUtil.getFilePathFromClasspath("log4j.properties");
+        if (null != log4jConfigPath ) {
+            PropertyConfigurator.configureAndWatch(log4jConfigPath);
+        } else {
+            defaultLogger.warn("log4j.properties not found on classpath! Logging configuration will not be reloaded.");
+        }
+    }
+    
     /**
      * Executes the method close with no parameters on the object received. If
      * the object is null, it does nothing (should this be logged?). Any
