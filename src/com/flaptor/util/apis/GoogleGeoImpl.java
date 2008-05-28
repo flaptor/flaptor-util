@@ -43,17 +43,13 @@ import com.flaptor.util.xml.SaxStackHandler;
  */
 public class GoogleGeoImpl implements GoogleGeo {
     
-    
     MultiExecutor<Void> multiExecutor = new MultiExecutor<Void>(1, "delayedGeocoding");
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
 
-	private long lastCall = System.currentTimeMillis();
-	
 	private MemFileCache<String> geoCache;
 	private String key;
 
 	Queue<Integer> periods; // periods of 1750 ms
-	boolean hasToWait = false;
 	int total;
 	int thisPeriod = 0;
 	
@@ -61,8 +57,7 @@ public class GoogleGeoImpl implements GoogleGeo {
 		geoCache = new MemFileCache<String>(50000, cacheDir, 3);
 		this.key = key;
 		periods = new LinkedList<Integer>();
-		for (int i = 0; i < 100; ++i) { //start with 1000 periods of 1750 (a bit less than half an hour)
-//            int p = new Random().nextInt(2);
+		for (int i = 0; i < 100; ++i) { //start with 100 periods of 1750
             int p = 1;
 		    periods.add(p);
 		    total += p;
@@ -78,6 +73,56 @@ public class GoogleGeoImpl implements GoogleGeo {
             }
 		}, 1750, 1750);
 	}
+	
+    private String retrieveGeocodingXml(final String place, boolean noWait) {
+        synchronized (periods) {
+            if (total > periods.size()) {
+                if (noWait) {
+                    logger.debug("cannot wait for " + place + " - returning null and retrieving later");
+                    Execution<Void> e = new Execution<Void>();
+                    e.addTask(new Callable<Void>() {
+                        public Void call() throws Exception {
+                            retrieveGeocodingXml(place, false);
+                            return null;
+                        }
+                    });
+                    multiExecutor.addExecution(e);
+                } else {
+                    while (total > periods.size()) {
+                        try {
+                            periods.wait();
+                        } catch (InterruptedException e) {logger.error(e,e);}
+                    }
+                }
+            }
+            thisPeriod++;
+            total++;
+        }
+
+        HttpClient client = new HttpClient();
+        String url = "http://maps.google.com/maps/geo?q="+StringUtil.urlEncode(place) + "&output=xml&key=" + "ABQIAAAANsiYczUO4OKBi4ERs1tMGxS3wM4UOGmx-u_A5H5NKh1NS56MdRTDtJ0TDy_CC1KY2AhY0D8eC9IjzQ";
+        GetMethod get = new GetMethod(url);
+        logger.debug("retrieving " + place);
+
+        String ret;
+        try {
+            int status = client.executeMethod(get);
+            if (status !=  200) throw new Exception("http request failed - status " + status);
+            ret = IOUtil.readAll(get.getResponseBodyAsStream());
+            get.releaseConnection();
+        } catch (Exception e) {
+            logger.warn(e,e);
+            return null;
+        }
+
+        if (checkGoodStatus(place, ret)) {
+            geoCache.put(place, ret);
+            return ret; 
+        } else {
+            return null;
+        }
+    }
+	
 	public MemFileCache<String> getCache() {
 		return geoCache;
 	}
@@ -106,18 +151,6 @@ public class GoogleGeoImpl implements GoogleGeo {
 	    String ret = getGeocodingXmlCache(place);
 		if (ret != null) return ret;
 		else return retrieveGeocodingXml(place, false);
-	}
-	
-	/**
-	 * removes all entries with bad status codes
-	 */
-	FileCache<String> m = new FileCache<String>("/home/marto/geocache", 3);
-	public void clean() {
-       for (Pair<String,String> e : geoCache) {
-           if (!checkGoodStatus(e.first(), e.last())) continue;
-           geoCache.remove(e.first());
-           m.addItem(e.first(), e.last());
-        }
 	}
 	
     public static int getStatusCode(String xml) {
@@ -190,56 +223,17 @@ public class GoogleGeoImpl implements GoogleGeo {
         }
         else return null; 
 	}
-    synchronized private String retrieveGeocodingXml(final String place, boolean noWait) {
-        synchronized (periods) {
-            System.out.println(total + " " + periods.size());
-            if (total >= periods.size()) {
-                if (noWait) {
-                    logger.debug("cannot wait for " + place + " - returning null and retrieving later");
-                    Execution<Void> e = new Execution<Void>();
-                    e.addTask(new Callable<Void>() {
-                        public Void call() throws Exception {
-                            System.out.println("HOLAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                            retrieveGeocodingXml(place, false);
-                            return null;
-                        }
-                    });
-                    multiExecutor.addExecution(e);
-                } else {
-                    while (total >= periods.size()) {
-                        try {
-                            periods.wait();
-                        } catch (InterruptedException e) {logger.error(e,e);}
-                    }
-                }
-            }
-            thisPeriod++;
-            total++;
-        }
-        HttpClient client = new HttpClient();
-        String url = "http://maps.google.com/maps/geo?q="+StringUtil.urlEncode(place) + "&output=xml&key=" + "ABQIAAAANsiYczUO4OKBi4ERs1tMGxS3wM4UOGmx-u_A5H5NKh1NS56MdRTDtJ0TDy_CC1KY2AhY0D8eC9IjzQ";
-        
-        GetMethod get = new GetMethod(url);
-        logger.debug("retrieving " + place);
 
-        String ret;
-        try {
-            int status = client.executeMethod(get);
-            if (status !=  200) throw new Exception("http request failed - status " + status);
-            ret = IOUtil.readAll(get.getResponseBodyAsStream());
-            get.releaseConnection();
-        } catch (Exception e) {
-            logger.warn(e,e);
-            return null;
-        } finally {
-            lastCall = System.currentTimeMillis();
-        }
-
-        if (checkGoodStatus(place, ret)) {
-            geoCache.put(place, ret);
-            return ret; 
-        } else {
-            return null;
-        }
-    }
+//  /**
+//  * removes all entries with bad status codes
+//  */
+// FileCache<String> m = new FileCache<String>("/home/marto/geocache", 3);
+// public void clean() {
+//    FileCache<String> m = new FileCache<String>( "/home/marto/geocache", 3);
+//      for (Pair<String,String> e : geoCache) {
+//          if (!checkGoodStatus(e.first(), e.last())) continue;
+//          geoCache.remove(e.first());
+//          m.addItem(e.first(), e.last());
+//       }
+// }
 }
