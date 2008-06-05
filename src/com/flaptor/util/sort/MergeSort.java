@@ -111,7 +111,12 @@ public final class MergeSort {
             Vector<Record> rec = new Vector<Record>();
             boolean memoryAvailable = true;
             while (memoryAvailable && ! allDone) {
-                Record r = reader.readRecord();
+                Record r = null;
+                try {
+                    r = reader.readRecord();
+                } catch (java.io.StreamCorruptedException e) {
+                    System.out.println("Error reading records: "+e);
+                }
                 if (r == null) {
                     allDone = true;
                     break;
