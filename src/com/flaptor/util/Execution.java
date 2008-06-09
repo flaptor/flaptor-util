@@ -45,6 +45,29 @@ public class Execution<T> {
     protected Queue<Callable<T>> executionQueue = new LinkedList<Callable<T>>();
     protected List<Results<T>> resultsList = new ArrayList<Results<T>>();
     protected boolean forgotten = false;
+
+    /**
+     * Empty constructor
+     */
+    public Execution() {}
+    
+    /**
+     * shortcut. Construct with one task (more can be added later)
+     * @param task
+     */
+    public Execution(Callable<T> task) {
+        addTask(task);
+    }
+    
+    /**
+     * shortcut. Construct with an array of tasks (more can be added later)
+     * @param tasks
+     */
+    public Execution(Callable<T>[] tasks) {
+        for (Callable<T> task:tasks) {
+            addTask(task);
+        }
+    }
     
     public List<Results<T>> getResultsList() {
         return resultsList;
