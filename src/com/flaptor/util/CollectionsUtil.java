@@ -18,12 +18,13 @@ package com.flaptor.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.google.common.collect.Lists;
 
 /**
  * Utility methods for Collections API
@@ -34,7 +35,15 @@ import java.util.Map.Entry;
 public class CollectionsUtil {
 
     /**
-     * Merges two sorted lists of comparable elements
+     * Merges two sorted lists of comparable elements into a new sorted list in linear time O(N) where N is
+     * the sum of list1.sive() + list2.size(), asumming both input lists can be iterated in linear time.
+     * 
+     * @param list1 one of the sorted lists to be merged. it should be sorted by the natural order of
+     * the type T (i.e. T.compareTo(T)) 
+     * @param list2 another sorted list to be merged. it should be sorted by the natural order of
+     * the type T (i.e. T.compareTo(T)) 
+     * 
+     * @return a new list with all the elements of list1 and list2 sorted by their natural order
      */
     @SuppressWarnings("unchecked")
     public static <T extends Comparable<T>> List<T> mergeLists(List<? extends T> list1, List<? extends T> list2) {
@@ -42,15 +51,24 @@ public class CollectionsUtil {
     }
 
     /**
-     * Merges two sorted lists of elements with a given comparator
+     * Merges two sorted lists of elements into a new sorted list using a custom comparator in linear time 
+     * O(N) where N is the sum of list1.sive() + list2.size(), asumming both input lists can be iterated in 
+     * linear time
+     * 
+     * @param list1 one of the sorted lists to be merged. it should be sorted by the order provided by {@code comparator}
+     * @param list2 another sorted list to be merged. it should be sorted by the order provided by {@code comparator}
+     * the type T (i.e. T.compareTo(T)) 
+     * @param comparator the comparator that provides the order for this merge operation
+     * 
+     * @return a new list with all the elements of list1 and list2 sorted by the given comparator  
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable<T>> List<T> mergeLists(List<? extends T> list1, List<? extends T> list2, Comparator<? super T> comparator) {
+    public static <T> List<T> mergeLists(List<? extends T> list1, List<? extends T> list2, Comparator<? super T> comparator) {
         return CollectionsUtil.<T>mergeLists(Arrays.asList(list1, list2), comparator);
     }
 
     /**
-     * @return a comparator that provides the natural ordering 
+     * @return a comparator that provides the natural ordering (i.e. the order defined by T.compareTo(T)
      */
     public static <T extends Comparable<T>> Comparator<T> naturalComparator() {
         return new Comparator<T>() {
@@ -61,7 +79,13 @@ public class CollectionsUtil {
     }
 
     /**
-     * Merges a list of sorted lists of comparable elements
+     * Merges any number of sorted lists of comparable elements into a new sorted list in linear time O(N) where N is
+     * the sum of each lists' size, asumming all input lists can be iterated in linear time.
+     * 
+     * @param sources the sorted lists to be merged. they should be sorted by the natural order of
+     * the type T (i.e. T.compareTo(T)) 
+     * 
+     * @return a new list with all the elements of all the lists sorted by their natural order
      */
     public static <T extends Comparable<T>> List<T> mergeLists(List<? extends List<? extends T>> sources) {
         List<T> merged = new ArrayList<T>();
@@ -70,7 +94,13 @@ public class CollectionsUtil {
     }
 
     /**
-     * Merges a list of sorted lists of elements with a given comparator
+     * Merges any number of sorted lists of elements into a new sorted list using a custom comparator in linear time 
+     * O(N) where N is the sum of each lists' size, asumming all input lists can be iterated in linear time.
+     * 
+     * @param sources the sorted lists to be merged. they should be sorted by order provided by {@code comparator}
+     * @param comparator the comparator that provides the order for this merge operation
+     * 
+     * @return a new list with all the elements of all the lists sorted by the given comparator
      */
     public static <T> List<T> mergeLists(List<? extends List<? extends T>> sources, Comparator<? super T> comparator) {
         List<T> merged = new ArrayList<T>();
@@ -79,14 +109,33 @@ public class CollectionsUtil {
     }
 
     /**
-     * Merges a list of sorted lists of comparable elements into a target list
+     * Merges any number of sorted lists of elements into a given list using the natural order of T in linear time 
+     * O(N) where N is the sum of each lists' size, asumming all input lists can be iterated in linear time.
+     * 
+     * The elements will be added to the end of the {@code target} list.
+     * 
+     * NOTE: any elements previoulsy existing in target won't be modified or reordered in any way.
+     * 
+     * @param sources the sorted lists to be merged.  they should be sorted by the natural order of
+     * the type T (i.e. T.compareTo(T))
+     * @param target the list where the elements will be inserted respecting their natural order. 
      */
     public static <T extends Comparable<T>> void mergeLists(List<? extends List<? extends T>> sources, List<? super T> target) {
         CollectionsUtil.<T>mergeLists(sources, target, CollectionsUtil.<T>naturalComparator());
     }
 
     /**
-     * Merges a list of sorted lists of elements with a given comparator into a target list
+     * Merges any number of sorted lists of elements into a given list using a custom comparator in linear time 
+     * O(N) where N is the sum of each lists' size, asumming all input lists can be iterated in linear time.
+     * 
+     * The elements will be added to the end of the {@code target} list.
+     * 
+     * NOTE: any elements previoulsy existing in target won't be modified or reordered in any way.
+     * 
+     * @param sources the sorted lists to be merged.  they should be sorted by the natural order of
+     * the type T (i.e. T.compareTo(T))
+     * @param target the list where the elements will be inserted respecting their natural order. 
+     * @param comparator the comparator that provides the order for this merge operation
      */
     public static <T> void mergeLists(List<? extends List<? extends T>> sources, List<? super T> target, Comparator<? super T> comparator) {
         int size = 0;
@@ -117,24 +166,24 @@ public class CollectionsUtil {
     }
 
     /**
-     * transforms a map into an ordered list of its entries
-     * @param map
-     * @param comparator
-     * @return
+     * Creates a list of sorted entries by copying them from the entrySet of a map. 
+     * 
+     * @param map the source map
+     * @param comparator the desired order for the entries list 
+     * 
+     * @return a newly created sorted list
      */
     public static <K,V> List<Entry<K,V>> order(Map<K,V> map, java.util.Comparator<Entry<K,V>> comparator) {
-		List<Entry<K,V>> list = new ArrayList<Entry<K,V>>(map.entrySet());
-		Collections.sort(list, comparator);
-		return list;
+		return Lists.sortedCopy(map.entrySet(), comparator);
     }
 
     /**
-     * orders the entries by value
-     * @param <K>
-     * @param <V>
-     * @param map
-     * @param desc
-     * @return
+     * Creates a list of sorted entries by copying them from the entrySet of a map. They are sorted by
+     * the natural order of the value (defined by V.compareTo(V)) 
+     * 
+     * @param map the source map
+     * 
+     * @return a newly created sorted list
      */
     public static <K,V extends Comparable<V>> List<Entry<K,V>> orderByValue(Map<K,V> map, final boolean desc){
     	return order(map, new Comparator<Entry<K,V>>() {
@@ -143,13 +192,14 @@ public class CollectionsUtil {
 			}
     	});
     }
+    
     /**
-     * orders the entries by key
-     * @param <K>
-     * @param <V>
-     * @param map
-     * @param desc
-     * @return
+     * Creates a list of sorted entries by copying them from the entrySet of a map. They are sorted by
+     * the natural order of the key (defined by K.compareTo(K)) 
+     * 
+     * @param map the source map
+     * 
+     * @return a newly created sorted list
      */
     public static <K extends Comparable<K>,V> List<Entry<K,V>> orderByKey(Map<K,V> map, final boolean desc){
     	return order(map, new Comparator<Entry<K,V>>() {
