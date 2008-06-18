@@ -145,12 +145,16 @@ public class GoogleGeoImpl implements GoogleGeo {
 	    else return null;
 	}
 	public String getGeocodingXml(String place) {
-        logger.debug(place);
+        logger.debug("requested " + place);
 
 	    place = place.toLowerCase();
 	    String ret = getGeocodingXmlCache(place);
-		if (ret != null) return ret;
-		else return retrieveGeocodingXml(place, false);
+		if (ret != null) {
+	        logger.debug("in cache: " + place);
+		    return ret;
+		} else {
+		    return retrieveGeocodingXml(place, false);
+		}
 	}
 	
     public static int getStatusCode(String xml) {
