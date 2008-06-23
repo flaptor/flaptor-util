@@ -216,6 +216,7 @@ public final class Execute {
             return future.get();
         } else {
             future.cancel(true);
+            executor.shutdownNow();
             throw new TimeoutException("Timed out");
         }
     }
