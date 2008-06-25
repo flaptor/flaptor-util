@@ -206,9 +206,17 @@ public final class Execute {
      * @throws ExecutionException if the task throws an exception
      * @throws TimeoutException if the task doesn't complete before the timeout is reached
      */
-    public static <T> T executeWithTimeout(Callable<T> callable, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public static <T> T executeWithTimeout(final Callable<T> callable, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        final String newThreadName = Thread.currentThread().getName() + "+timeout";
+
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<T> future = executor.submit(callable);
+        Future<T> future = executor.submit(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                Thread.currentThread().setName(newThreadName);
+                return callable.call();
+            }
+        });
         executor.shutdown();
         
         boolean completed = executor.awaitTermination(timeout, unit);
