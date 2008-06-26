@@ -121,8 +121,7 @@ limitations under the License.
 				<include name="com/flaptor/**/*.class"/>
 			</fileset>
 			<fileset dir="${conf.dir}" >
-				<!-- include name="common.properties" />
-				<include name="*.properties.defaults" / -->
+				<include name="*.properties.defaults" />
 			</fileset>
 		</jar>
     </target>
