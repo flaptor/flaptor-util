@@ -86,10 +86,22 @@ public class XmlrpcServer extends AServer {
      * @param h the objet to handle the requests.
      * @param p the port on which to listen
      */
-    public XmlrpcServer(final int p) {
+    public XmlrpcServer(int p) {
         super(p);
         webserver = new WebServer(port);
         webserver.setParanoid(false);
+    }
+
+    /**
+     * Shortcut constructor that creates and starts a xmlrpc server with the given handler 
+     * @param p
+     * @param context
+     * @param handler
+     */
+    public XmlrpcServer(int p, String context, Object handler) {
+        this(p);
+        addHandler(context, handler);
+        start();
     }
 
     /**
