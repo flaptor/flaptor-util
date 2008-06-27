@@ -37,8 +37,12 @@ public class DateUtil {
      * @return 
      */
     public static int howManyDaysPassed(Calendar from, Calendar to) {
+        
         long diff = getCanonicalDay(to).getTimeInMillis()- getCanonicalDay(from).getTimeInMillis();
-        return (int)(diff / MILLIS_IN_DAY);
+        double days = (double)diff / (double)MILLIS_IN_DAY;
+        int daysInt = (int)days;
+        if (days - daysInt > 0.5) daysInt++;
+        return daysInt;
     }
     
     /**
