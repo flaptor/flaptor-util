@@ -120,7 +120,9 @@ public class XmlrpcSerialization {
 						if (args == null) args = new Object[0];
 						Triad<Method,Boolean,boolean[]> originalMethodInfo = getMethod(methodMap, method.getName(), args);
 					
-						if (originalMethodInfo == null) throw new RuntimeException("original method should not be null");
+						if (originalMethodInfo == null) {
+						    throw new RuntimeException("original method should not be null");
+						}
 						
 						logger.debug("executing " + method);
 						Object[] newArgs = new Object[args.length];
@@ -167,7 +169,22 @@ public class XmlrpcSerialization {
 			if (name.equals(methodName) && args.length == methodArgs.length) {
 				boolean isMethod = true;
 				for (int i = 0; i < args.length; i++) {
-					if (!methodArgs[i].isInstance(args[i])) {
+				    Class methodArg = methodArgs[i];
+				    Object arg = args[i];
+					if (!methodArg.isInstance(arg)) {
+					    if (methodArg.isPrimitive()) {
+					        if (
+                                    (methodArg.equals(int.class) && arg.getClass().equals(Integer.class)) ||
+                                    (methodArg.equals(long.class) && arg.getClass().equals(Long.class)) ||
+                                    (methodArg.equals(byte.class) && arg.getClass().equals(Byte.class)) ||
+                                    (methodArg.equals(char.class) && arg.getClass().equals(Character.class)) ||
+                                    (methodArg.equals(float.class) && arg.getClass().equals(Float.class)) ||
+                                    (methodArg.equals(double.class) && arg.getClass().equals(Double.class)) ||
+                                    (methodArg.equals(boolean.class) && arg.getClass().equals(Boolean.class))
+					        ){
+					            continue;
+					        }
+					    }
 						isMethod = false;
 						break;
 					}
