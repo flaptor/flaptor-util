@@ -35,6 +35,7 @@ import javassist.CtMethod;
 import javassist.NotFoundException;
 
 import org.apache.log4j.Logger;
+import org.w3c.dom.ranges.RangeException;
 
 import com.flaptor.util.Execute;
 import com.flaptor.util.IOUtil;
@@ -118,6 +119,8 @@ public class XmlrpcSerialization {
 					try {
 						if (args == null) args = new Object[0];
 						Triad<Method,Boolean,boolean[]> originalMethodInfo = getMethod(methodMap, method.getName(), args);
+					
+						if (originalMethodInfo == null) throw new RuntimeException("original method should not be null");
 						
 						logger.debug("executing " + method);
 						Object[] newArgs = new Object[args.length];
