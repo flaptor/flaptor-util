@@ -33,6 +33,15 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public final class Execute {
 
+    private final static class ClassContextManager extends SecurityManager {
+        @Override
+        public Class<?>[] getClassContext() {
+            return super.getClassContext();
+        }
+    }
+    
+    private static ClassContextManager classContextyManager = new ClassContextManager();
+
     //so that it cannot be instantiated
     private Execute() {}
 
@@ -119,7 +128,11 @@ public final class Execute {
     public static String whoAmI() {
         return new Throwable().getStackTrace()[1].getClassName();
     }
-
+    
+    public static Class<?> myClass() {
+        return classContextyManager.getClassContext()[2];
+    }
+    
     /**
      * Returns the unqualified name of the invoking class.
      */
@@ -137,6 +150,10 @@ public final class Execute {
         return new Throwable().getStackTrace()[2].getClassName();
     }
 
+    public static Class<?> myCallersClass() {
+        return classContextyManager.getClassContext()[3];
+    }
+    
 
     // Auxiliary object to synchronize a static method.
     private static byte[] synchObj = new byte[1];
@@ -202,12 +219,31 @@ public final class Execute {
      * @param timeout the maximum time in which the task should be completed
      * @param unit the time unit of the given timeout.
      * @return
-     * @throws InterruptedException if this thread gets interrupted while waiting for the task to complete.
      * @throws ExecutionException if the task throws an exception
      * @throws TimeoutException if the task doesn't complete before the timeout is reached
+     * @throws InterruptedException if this thread gets interrupted while waiting for the task to complete.
      */
-    public static <T> T executeWithTimeout(final Callable<T> callable, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        final String newThreadName = Thread.currentThread().getName() + "+timeout";
+    public static <T> T executeWithTimeout(final Callable<T> callable, long timeout, TimeUnit unit) throws ExecutionException, TimeoutException, InterruptedException {
+        return executeWithTimeout(callable, timeout, unit, "timeout");
+    }
+    
+    /**
+     * Executes a task synchronously and if it takes longer than the specified timeout
+     * it gets interrupted and a TimeoutException is thrown.
+     * 
+     * @param <T> the return type of the task
+     * @param callable the task to be executed
+     * @param timeout the maximum time in which the task should be completed
+     * @param unit the time unit of the given timeout.
+     * @param taskName the name of the task, the task will be executed in a thread with the same name as the
+     * current thread with "+taskName" appended to it.
+     * @return
+     * @throws ExecutionException if the task throws an exception
+     * @throws TimeoutException if the task doesn't complete before the timeout is reached
+     * @throws InterruptedException if this thread gets interrupted while waiting for the task to complete.
+     */
+    public static <T> T executeWithTimeout(final Callable<T> callable, long timeout, TimeUnit unit, String taskName) throws ExecutionException, TimeoutException, InterruptedException {
+        final String newThreadName = Thread.currentThread().getName() + "+" + taskName;
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<T> future = executor.submit(new Callable<T>() {
@@ -219,7 +255,15 @@ public final class Execute {
         });
         executor.shutdown();
         
-        boolean completed = executor.awaitTermination(timeout, unit);
+        boolean completed;
+        try {
+            completed = executor.awaitTermination(timeout, unit);
+        } catch (InterruptedException e) {
+            // cancel the execution and propagate the interruption
+            future.cancel(true);
+            executor.shutdownNow();
+            throw e;
+        }
         if (completed) {
             return future.get();
         } else {
