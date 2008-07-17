@@ -17,6 +17,7 @@ import com.flaptor.util.Execute;
  * @author Martin Massera
  */
 abstract public class MVCServlet extends HttpServlet {
+    private static final Logger logger = Logger.getLogger(Execute.whoAmI());
 
     private static final long serialVersionUID = 1L;
 
@@ -32,6 +33,7 @@ abstract public class MVCServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
+            logger.error("exception while processing request",e);
             throw new ServletException(e);
         }
     }

@@ -128,11 +128,17 @@ public final class Execute {
     public static String whoAmI() {
         return new Throwable().getStackTrace()[1].getClassName();
     }
-    
+    /**
+     * 
+     * @return the name of the method that calls this one
+     */
+    public static String methodName() {
+        return new Throwable().getStackTrace()[1].getMethodName();
+    }
+
     public static Class<?> myClass() {
         return classContextyManager.getClassContext()[2];
     }
-    
     /**
      * Returns the unqualified name of the invoking class.
      */
