@@ -294,5 +294,15 @@ public final class Execute {
         }
     }
     
+    /**
+     * throws this exception if it is runtime or error, and throws a runtimeException
+     * if it is an Exception
+     * @param t
+     */
+    public static void runtimeOrError(Throwable t) {
+        if (t instanceof RuntimeException) throw (RuntimeException) t;
+        else if (t instanceof Error) throw (Error) t;
+        else throw new RuntimeException(t);
+    }
 }
 
