@@ -39,12 +39,14 @@ import java.util.zip.GZIPOutputStream;
 
 import com.google.common.collect.Lists;
 
+import org.apache.log4j.Logger;
 /**
  * utility class for common IO operations
  * 
  * @author Martin Massera
  */
 public class IOUtil {
+    private static final Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());
 
     /**
      * fully reads a reader
@@ -52,20 +54,26 @@ public class IOUtil {
      * @throws IOException 
      */
     public static String readAll(Reader reader) throws IOException {
-        BufferedReader br = new BufferedReader(reader);
-        StringBuffer buf = new StringBuffer();
-        char[] buffer = new char[256];
-        while(true) {
-            int charsRead = br.read(buffer);
-            if (charsRead == -1) break;
-            buf.append(buffer, 0, charsRead);
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(reader);
+            StringBuffer buf = new StringBuffer();
+            char[] buffer = new char[256];
+            while(true) {
+                int charsRead = br.read(buffer);
+                if (charsRead == -1) break;
+                buf.append(buffer, 0, charsRead);
+            }
+            return buf.toString();
+        } finally {
+            Execute.close(br, logger);
         }
-        return buf.toString();
     }
 
 
     /**
      * fully reads a stream
+     * Warning, it does not close the passed InputStream.
      * @return a string with all the contents of the stream 
      * @throws IOException 
      */
@@ -120,18 +128,22 @@ public class IOUtil {
 
     public static void serialize(Object o, OutputStream os, boolean compress) throws IOException {
         GZIPOutputStream gos = null;
-        if (compress) {
-            gos = new GZIPOutputStream(os);
-            os = gos;
+    	ObjectOutputStream oos = null;
+        try {        
+            if (compress) {
+                gos = new GZIPOutputStream(os);
+                os = gos;
+            }
+            oos = new ObjectOutputStream(os);
+            oos.writeObject(o);
+            oos.flush();
+            if (gos != null) {
+                gos.flush();
+            }
+        } finally {
+            Execute.close(oos, logger);
+            Execute.close(gos, logger);
         }
-    	ObjectOutputStream oos = new ObjectOutputStream(os);
-    	oos.writeObject(o);
-    	oos.flush();
-    	oos.close();
-    	if (gos != null) {
-    	    gos.flush();
-    	    gos.close();
-    	}
     }
 
     /**
@@ -140,26 +152,30 @@ public class IOUtil {
      * @param file
      */
     public static void serialize(Object o, String file, boolean compress) {
+        FileOutputStream fos = null;
         try {
-            FileOutputStream fos = new FileOutputStream(file);
+            fos = new FileOutputStream(file);
             serialize(o, fos, compress);
             fos.flush();
-            fos.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            Execute.close(fos, logger);
         }
     }
     
     public static byte[] serialize(Object o, boolean compress) {
+        ByteArrayOutputStream out = null;
     	try { 
-	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+	    	out = new ByteArrayOutputStream();
 	    	serialize(o, out, compress);
 	    	out.flush();
-	    	out.close();
 	    	return out.toByteArray();
     	} catch (IOException e) { //this exception should not happen
     		throw new RuntimeException(e);
-    	}
+    	} finally {
+            Execute.close(out, logger);
+        }
     }
 
 
@@ -175,25 +191,30 @@ public class IOUtil {
         try {
             fileInputStream = new FileInputStream(file);
             Object obj = deserialize(fileInputStream, compressed);
-            fileInputStream.close();
             return obj;
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } 
+        } finally {
+            Execute.close(fileInputStream, logger);
+        }
     }
 
     public static Object deserialize(InputStream is, boolean compressed) {
+        GZIPInputStream gis = null;
+        ObjectInputStream ois = null;
     	try {
-    	    GZIPInputStream gis = null;
     	    if (compressed) {
     	        gis = new GZIPInputStream(is);
     	        is = gis;
     	    }
-    	    Object obj = new ObjectInputStream(is).readObject();
-    	    if (gis!=null) gis.close();
+            ois = new ObjectInputStream(is);
+    	    Object obj = ois.readObject();
     	    return obj;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            Execute.close(ois, logger);
+            Execute.close(gis, logger);
         }
     }
 
@@ -217,19 +238,23 @@ public class IOUtil {
    	 * @throws IOException 
    	 */
    	public static List<String> readLines(boolean toLowerCase, boolean trim, boolean emptyLines, Reader reader) throws IOException {
-   	    List<String> ret = new ArrayList<String>();
-   	    BufferedReader bufferedReader = new BufferedReader(reader);
-   	    while (true) {
-   	        String line = bufferedReader.readLine();
-   	        if (line == null) {
-   	            bufferedReader.close();
-   	            return ret;
-   	        }
-   	        if (toLowerCase) line = line.toLowerCase();
-   	        if (trim) line = line.trim();
-   	        if (!emptyLines && line.length() == 0) continue;
-   	        ret.add(line);
-   	    }
+   	    BufferedReader bufferedReader = null;
+        try {
+            List<String> ret = new ArrayList<String>();
+            bufferedReader = new BufferedReader(reader);
+            while (true) {
+                String line = bufferedReader.readLine();
+                if (line == null) {
+                    return ret;
+                }
+                if (toLowerCase) line = line.toLowerCase();
+                if (trim) line = line.trim();
+                if (!emptyLines && line.length() == 0) continue;
+                ret.add(line);
+            }
+        } finally {
+            Execute.close(bufferedReader, logger);
+        }
    	}
    	
    	/**
@@ -267,10 +292,13 @@ public class IOUtil {
                         String line = nextLine;
                         try {
                             nextLine = getNextLine();
-                            if (nextLine == null) br.close();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
-                        }
+                        } finally {
+                            if (nextLine == null) {
+                                Execute.close(br, logger);
+                            }
+                        }                            
                         return line;
                     }
                     public void remove() {throw new UnsupportedOperationException("remove not supported");}
