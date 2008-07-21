@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -35,7 +34,6 @@ import javassist.CtMethod;
 import javassist.NotFoundException;
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.ranges.RangeException;
 
 import com.flaptor.util.Execute;
 import com.flaptor.util.IOUtil;
@@ -141,8 +139,11 @@ public class XmlrpcSerialization {
 						}
 						return ret;
 					} catch (InvocationTargetException e) {
-						logger.error(e.getCause());
+						logger.error("exception in XMLRPC handler - " + e.getCause(), e);
 						throw e.getCause();
+					} catch (Throwable t) {
+						Execute.runtimeOrError(t, logger);
+						return null; //never reached
 					}
 				}
 			};

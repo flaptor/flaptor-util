@@ -1,7 +1,6 @@
 package com.flaptor.util.web;
 
 import javax.servlet.http.HttpServletRequest;
-import com.flaptor.util.web.AbstractAuthorizationFilter;
 
 /**
  * filter for checking logged in users

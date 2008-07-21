@@ -1,22 +1,20 @@
 package com.flaptor.util.timeplot;
 
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.net.URL;
-
-import com.google.common.collect.Lists;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
 import com.flaptor.util.DomUtil;
+import com.google.common.collect.Lists;
 
 /**
  * This class consists exclusively of static methods that can be used

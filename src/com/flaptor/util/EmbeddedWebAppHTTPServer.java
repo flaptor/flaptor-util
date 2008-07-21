@@ -16,8 +16,6 @@ limitations under the License.
 
 package com.flaptor.util;
 
-import org.mortbay.jetty.Server;
-
 import com.flaptor.util.remote.WebServer;
 
 /**

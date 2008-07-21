@@ -2,7 +2,6 @@ package com.flaptor.util.web;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 

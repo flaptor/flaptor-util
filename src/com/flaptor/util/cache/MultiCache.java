@@ -22,12 +22,10 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import com.flaptor.util.Config;
 import com.flaptor.util.Execute;
 import com.flaptor.util.Execution;
 import com.flaptor.util.MultiExecutor;
 import com.flaptor.util.Pair;
-import com.flaptor.util.PortUtil;
 import com.flaptor.util.Execution.Results;
 
 /**

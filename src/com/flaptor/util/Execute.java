@@ -299,10 +299,17 @@ public final class Execute {
      * if it is an Exception
      * @param t
      */
-    public static void runtimeOrError(Throwable t) {
-        if (t instanceof RuntimeException) throw (RuntimeException) t;
-        else if (t instanceof Error) throw (Error) t;
-        else throw new RuntimeException(t);
+    public static void runtimeOrError(Throwable t, Logger logger) {
+        if (t instanceof RuntimeException) {
+        	if (logger != null) logger.error("Unexpected RuntimeException", t);
+        	throw (RuntimeException) t;
+        } else if (t instanceof Error) {
+        	if (logger != null) logger.error("Unexpected Error", t);
+        	throw (Error) t;
+        } else {
+        	if (logger != null) logger.error("unexpected Exception, should be Runtime or Error", t);
+        	throw new RuntimeException("unexpected Exception, should be Runtime or Error",t);
+        }
     }
 }
 

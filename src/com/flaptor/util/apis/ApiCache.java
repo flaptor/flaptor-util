@@ -1,7 +1,5 @@
 package com.flaptor.util.apis;
 
-import java.rmi.Remote;
-
 import org.apache.log4j.Logger;
 
 import com.flaptor.util.Execute;

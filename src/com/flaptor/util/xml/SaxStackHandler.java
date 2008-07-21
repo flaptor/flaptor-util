@@ -1,14 +1,7 @@
 package com.flaptor.util.xml;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.HashSet;
 import java.util.Stack;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.tools.ant.filters.StringInputStream;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 
 import com.flaptor.util.AStoppableThread;
 import com.flaptor.util.Execute;
-import com.flaptor.util.RunningState;
 import com.flaptor.util.Stoppable;
 
 /**

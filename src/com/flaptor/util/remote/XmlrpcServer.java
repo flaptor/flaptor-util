@@ -19,15 +19,11 @@ package com.flaptor.util.remote;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.xmlrpc.WebServer;
-import org.apache.xmlrpc.XmlRpcServer;
-import org.mortbay.jetty.handler.AbstractHandler;
 
 import com.flaptor.util.ClassUtil;
 import com.flaptor.util.Execute;

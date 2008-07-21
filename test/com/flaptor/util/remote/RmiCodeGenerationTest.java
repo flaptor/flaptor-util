@@ -1,15 +1,11 @@
 package com.flaptor.util.remote;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.rmi.Remote;
-import java.util.Arrays;
 
 import com.flaptor.util.Execute;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
-import com.flaptor.util.remote.RmiCodeGeneration;
-import com.flaptor.util.remote.RmiServer;
 
 public class RmiCodeGenerationTest extends TestCase{
     private RmiServer server;

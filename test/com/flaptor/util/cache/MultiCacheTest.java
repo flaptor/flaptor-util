@@ -20,15 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.flaptor.util.Config;
 import com.flaptor.util.Execute;
 import com.flaptor.util.FileUtil;
 import com.flaptor.util.Pair;
-import com.flaptor.util.PortUtil;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
-import com.flaptor.util.cache.FileCache;
-import com.flaptor.util.cache.MultiCache;
 import com.flaptor.util.remote.RmiServer;
 
 /**

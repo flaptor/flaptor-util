@@ -1,7 +1,6 @@
 package com.flaptor.util.web;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.Filter;

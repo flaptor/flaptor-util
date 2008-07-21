@@ -1,18 +1,11 @@
 package com.flaptor.util.apis;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.rmi.Remote;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -21,16 +14,12 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.xml.sax.SAXException;
 
-import com.flaptor.util.CollectionsUtil;
 import com.flaptor.util.Execute;
 import com.flaptor.util.Execution;
 import com.flaptor.util.IOUtil;
 import com.flaptor.util.MultiExecutor;
-import com.flaptor.util.Pair;
 import com.flaptor.util.SaxUtil;
 import com.flaptor.util.StringUtil;
-import com.flaptor.util.ThreadUtil;
-import com.flaptor.util.cache.FileCache;
 import com.flaptor.util.cache.MemFileCache;
 import com.flaptor.util.xml.SaxStackHandler;
 

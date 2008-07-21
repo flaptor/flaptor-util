@@ -24,9 +24,9 @@ import java.rmi.registry.Registry;
 import org.apache.log4j.Logger;
 
 import com.flaptor.util.remote.AClientStub;
-import com.flaptor.util.remote.RpcException;
 import com.flaptor.util.remote.ExponentialFallbackPolicy;
 import com.flaptor.util.remote.RmiServer;
+import com.flaptor.util.remote.RpcException;
 
 /**
  * Stub for accessing a remote cache through RMI

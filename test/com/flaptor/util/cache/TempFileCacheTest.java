@@ -30,10 +30,8 @@ import com.flaptor.util.Execute;
 import com.flaptor.util.FileUtil;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
-import com.flaptor.util.cache.FileCache;
-import com.flaptor.util.cache.RmiCacheStub;
-import com.flaptor.util.remote.RpcException;
 import com.flaptor.util.remote.RmiServer;
+import com.flaptor.util.remote.RpcException;
 
 /**
  * @author Flaptor Development Team

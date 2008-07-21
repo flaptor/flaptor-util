@@ -40,10 +40,10 @@ limitations under the License.
         <fileset dir="${lib.dir}">
         	<include name="*.jar" />
         	<include name="javassist.jar" />
-	</fileset>
-	<fileset dir="${tools.dir}">
-		<include name="junit-4.4.jar"/>
-	</fileset>
+		</fileset>
+		<fileset dir="${tools.dir}">
+			<include name="junit-4.4.jar"/>
+		</fileset>
     </path>
 
     <path id="classpath.jars.tools">

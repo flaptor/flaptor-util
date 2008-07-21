@@ -18,8 +18,6 @@ package com.flaptor.util;
 
 import javax.servlet.http.HttpServlet;
 
-import org.mortbay.jetty.Server;
-
 import com.flaptor.util.remote.WebServer;
 
 /**
