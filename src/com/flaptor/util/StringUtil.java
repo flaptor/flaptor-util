@@ -18,6 +18,7 @@ package com.flaptor.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.net.URLDecoder;
 
 
 /**
@@ -82,7 +83,7 @@ public final class StringUtil {
      */
     public static String urlDecode(String string) {
         try {
-            return URLEncoder.encode(string, "UTF-8");
+            return URLDecoder.decode(string, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
