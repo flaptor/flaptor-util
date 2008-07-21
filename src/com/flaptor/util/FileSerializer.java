@@ -2,6 +2,8 @@ package com.flaptor.util;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * Use this class to avoid a serializing to be truncated by system exiting.
@@ -17,6 +19,8 @@ import java.io.File;
  */
 public class FileSerializer {
     
+	private static final Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());
+
     private File file;
     private File oldFile;
     private File tempFile;
@@ -44,20 +48,26 @@ public class FileSerializer {
                 obj = IOUtil.deserialize(tempFile.getAbsolutePath(), true);
                 tempFile.renameTo(file);
                 ok = true;
-            } catch (Throwable t) {}
+            } catch (Throwable t) {
+            	logger.error(t,t);
+            }
             tempFile.delete();
         }
         if (!ok && file.exists()) {
             try {
                 obj = IOUtil.deserialize(file.getAbsolutePath(), true);
                 ok = true;
-            } catch (Throwable t) {}
+            } catch (Throwable t) {
+            	logger.error(t,t);
+            }
         }
         if (!ok && oldFile.exists()) {
             try {
                 obj = IOUtil.deserialize(oldFile.getAbsolutePath(), true);
                 oldFile.renameTo(file);
-            } catch (Throwable t) {}
+            } catch (Throwable t) {
+            	logger.error(t,t);
+            }
             oldFile.delete();
         }
         return obj;
