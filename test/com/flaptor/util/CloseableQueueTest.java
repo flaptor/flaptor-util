@@ -15,13 +15,73 @@ public class CloseableQueueTest extends TestCase
     }
 
     @TestInfo(testType = TestInfo.TestType.UNIT)
-    public void testStates() {
+    public void testClosed() {
     	CloseableQueue<String> q = new CloseableQueue<String>();
     	assertFalse("Queue started closed.", q.isClosed());
     	q.close();
     	assertTrue("Queue was not closed.", q.isClosed());
     }
-    
+
+    @TestInfo(testType = TestInfo.TestType.UNIT)
+    public void testClosedReject1() {
+    	CloseableQueue<String> q = new CloseableQueue<String>();
+    	q.close();
+    	boolean ok = false;
+    	try {
+    		q.enqueueBlock("",10);
+    	} catch (IllegalStateException e) {
+    		ok = true;
+    	}
+    	assertTrue(ok);
+
+    	ok = false;
+    	try {
+    		q.enqueueBlock("");
+    	} catch (IllegalStateException e) {
+    		ok = true;
+    	}
+    	assertTrue(ok);
+
+    	ok = false;
+    	try {
+    		q.enqueueNoBlock("");
+    	} catch (IllegalStateException e) {
+    		ok = true;
+    	}
+    	assertTrue(ok);
+    }
+
+    @TestInfo(testType = TestInfo.TestType.UNIT)
+    public void testClosedReject2() {
+    	CloseableQueue<String> q = new CloseableQueue<String>();
+    	q.close();
+    	boolean ok = false;
+    	try {
+    		q.dequeueBlock(10);
+    	} catch (IllegalStateException e) {
+    		ok = true;
+    	}
+    	assertTrue(ok);
+
+    	ok = false;
+    	try {
+    		q.dequeueBlock();
+    	} catch (IllegalStateException e) {
+    		ok = true;
+    	} catch (UnsupportedOperationException e) {
+    		ok = true;
+    	}
+    	assertTrue(ok);
+
+    	ok = false;
+    	try {
+    		q.dequeueNoBlock();
+    	} catch (IllegalStateException e) {
+    		ok = true;
+    	}
+    	assertTrue(ok);
+    }
+
     /**
         Test that the reported size is consistent with the objects added.
     */
