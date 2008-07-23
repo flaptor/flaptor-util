@@ -31,21 +31,21 @@ public class FileSerializer {
         tempFile = new File(file.getAbsolutePath()+".temp");
     }
     
-    public void serialize(Object obj) {
-        IOUtil.serialize(obj, tempFile.getAbsolutePath(), true);
+    public void serialize(Object obj, boolean compressed) {
+        IOUtil.serialize(obj, tempFile.getAbsolutePath(), compressed);
         file.renameTo(oldFile);
         tempFile.renameTo(file);
         oldFile.delete();
     }
     
-    public Object deserialize() {
+    public Object deserialize(boolean compressed) {
         Object obj = null;
 
         boolean ok = false;
         
         if (tempFile.exists()) {
             try {
-                obj = IOUtil.deserialize(tempFile.getAbsolutePath(), true);
+                obj = IOUtil.deserialize(tempFile.getAbsolutePath(), compressed);
                 tempFile.renameTo(file);
                 ok = true;
             } catch (Throwable t) {
