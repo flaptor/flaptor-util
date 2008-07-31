@@ -632,7 +632,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     }
 
     public static void main (String[] args) {
-        String usage = "Cache get <dir> \nCache get <dir> <url>\\nCache getobj <dir> \\nCache getobj <dir> <url>\nCache getobjprop <dir> <method> \nCache getobjprop <dir> <method> <url>\nCache list <dir>\nCache translate <src dir> <dest dir> <src file depth>";
+        String usage = "Cache get <dir> \nCache get <dir> <url>\nCache getobj <dir> \nCache getobj <dir> <url>\nCache getobjprop <dir> <method> \nCache getobjprop <dir> <method> <url>\nCache list <dir>\nCache translate <src dir> <dest dir> <src file depth>";
         if (args.length != 2 && args.length != 3  && args.length != 4) {
             System.out.println(usage);
             System.exit(1);
