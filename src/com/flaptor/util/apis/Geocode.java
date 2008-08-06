@@ -10,6 +10,8 @@ import java.io.Serializable;
  * @author Martin Massera
  */
 public class Geocode implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private String locality;
     private String country;
     private double[] latLong;

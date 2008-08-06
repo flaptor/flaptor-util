@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javassist.SerialVersionUID;
+
 import org.apache.log4j.Logger;
 
 import com.flaptor.hist4j.AdaptiveHistogram;
@@ -38,6 +40,9 @@ import com.flaptor.hist4j.AdaptiveHistogram;
  * @author Martin Massera
  */
 public class Statistics implements Serializable {
+    
+    private static final long serialVersionUID = -6067116085654700143L;
+
     private static final Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());
 	private static final Statistics instance;
 	
