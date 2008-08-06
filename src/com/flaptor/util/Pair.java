@@ -25,7 +25,7 @@ import java.io.Serializable;
     One or both objects can be null.
 */
 @SuppressWarnings("serial")
-public class Pair<T1, T2> implements Serializable, Comparable<Pair<? extends Comparable<T1>, ? extends Comparable<T2>>> {
+public class Pair<T1, T2> implements Serializable, Comparable<Pair<? extends Comparable<? super T1>, ? extends Comparable<? super T2>>> {
     final private T1 fst;
     final private T2 lst;
     
@@ -78,7 +78,7 @@ public class Pair<T1, T2> implements Serializable, Comparable<Pair<? extends Com
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final Pair other = (Pair) obj;
+        final Pair<?,?> other = (Pair<?,?>) obj;
         if (null == fst) {
             if (null != other.fst)
                 return false;
@@ -95,10 +95,11 @@ public class Pair<T1, T2> implements Serializable, Comparable<Pair<? extends Com
     /**
      * compares the first element and if it is equal, compares the last
      */
-	public int compareTo(Pair<? extends Comparable<T1>, ? extends Comparable<T2>> p) {
-		int ret = -p.fst.compareTo(fst);
+	public int compareTo(Pair<? extends Comparable<? super T1>, ? extends Comparable<? super T2>> p) {
+		int ret = -p.first().compareTo(this.first());
 		if (ret != 0) return ret;
-		else return -p.lst.compareTo(lst);
+		else return -p.last().compareTo(this.last());
 	}
+	
 }
 
