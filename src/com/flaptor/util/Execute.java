@@ -33,6 +33,10 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public final class Execute {
 
+    /**
+     * Hacky class to obtain the class context (this holds the classes of the
+     * current call stack)
+     */
     private final static class ClassContextManager extends SecurityManager {
         @Override
         public Class<?>[] getClassContext() {
@@ -40,7 +44,7 @@ public final class Execute {
         }
     }
     
-    private static ClassContextManager classContextyManager = new ClassContextManager();
+    private static ClassContextManager classContextManager = new ClassContextManager();
 
     //so that it cannot be instantiated
     private Execute() {}
@@ -126,7 +130,7 @@ public final class Execute {
      * private static final Logger logger = Logger.getLogger(Execute.whoAmI());
      */
     public static String whoAmI() {
-        return new Throwable().getStackTrace()[1].getClassName();
+        return myCallersClass().getName();
     }
     /**
      * 
@@ -136,9 +140,13 @@ public final class Execute {
         return new Throwable().getStackTrace()[1].getMethodName();
     }
 
+    /**
+     * @return the actual loaded Class of the invoker of this method.
+     */
     public static Class<?> myClass() {
-        return classContextyManager.getClassContext()[2];
+        return classContextManager.getClassContext()[2];
     }
+    
     /**
      * Returns the unqualified name of the invoking class.
      */
@@ -151,16 +159,56 @@ public final class Execute {
      * This method returns the fully qualified name of the class that invoked the caller.
      * The string returned is the same as the one returned by getClass().getName() on an
      * instantiated object.
+     * 
+     * WARNING: in some cases, the caller of a method may be an "$access" method, this case
+     * has been noted to happen with inner classes and may happen in other cases not noted,
+     * if your code depends on this make sure this additional method does not show up in your
+     * execution stack. If you need to intentionally skip such a method or search the execution
+     * stack your self you can use {@link Execute#getClassContext()}. 
      */
     public static String whoCalledMe() {
-        return new Throwable().getStackTrace()[2].getClassName();
+        return myCallersClass(2).getName();
     }
 
+    /**
+     * @return the actual loaded Class of the invoker of the invoker of this method.
+     * 
+     * WARNING: in some cases, the caller of a method may be an "$access" method, this case
+     * has been noted to happen with inner classes and may happen in other cases not noted,
+     * if your code depends on this make sure this additional method does not show up in your
+     * execution stack. If you need to intentionally skip such a method or search the execution
+     * stack your self you can use {@link Execute#getClassContext()}. 
+     */
     public static Class<?> myCallersClass() {
-        return classContextyManager.getClassContext()[3];
+        return classContextManager.getClassContext()[3];
     }
     
+    /**
+     * @param depth the depth for which we want the class, 0 would mean this method
+     * invoker, 1 it's invoker and so on.
+     * 
+     * @return the actual loaded Class of the element in the execution stack
+     * that is depth steps above the invoker of this method.
+     * 
+     * WARNING: in some cases, the caller of a method may be an "$access" method, this case
+     * has been noted to happen with inner classes and may happen in other cases not noted,
+     * if your code depends on this make sure this additional method does not show up in your
+     * execution stack. If you need to intentionally skip such a method or search the execution
+     * stack your self you can use {@link Execute#getClassContext()}. 
+     */
+    public static Class<?> myCallersClass(int depth) {
+        return classContextManager.getClassContext()[2 + depth];
+    }
 
+    /**
+     * @return the context of classes in the current execution stack.
+     * Note that the element at [1] will be Execute.class and the element
+     * at [2] will be the invoker of this method and so on
+     */
+    public static Class<?>[] getClassContext() {
+        return classContextManager.getClassContext();
+    }
+    
     // Auxiliary object to synchronize a static method.
     private static byte[] synchObj = new byte[1];
 
