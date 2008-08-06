@@ -3,6 +3,8 @@ package com.flaptor.util;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 
 /**
@@ -184,6 +186,14 @@ public class ConfigTest extends TestCase {
             super.unfilterOutput();
             // success
         }
+    }
+    
+    @TestInfo(testType = TestInfo.TestType.UNIT)
+    public void testConfigClassLoader() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        URL url = getClass().getClassLoader().getResource("classa.jar");
+        URLClassLoader loader = new URLClassLoader(new URL[] {url}, getClass().getClassLoader());
+        String value = Class.forName("ClassA", true, loader).newInstance().toString();
+        assertEquals("value", value);
     }
 
 }

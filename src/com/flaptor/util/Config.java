@@ -110,7 +110,7 @@ public class Config implements Serializable{
      * @fixme non cached calls for non-default loaders
      */
     public static Config getConfig(String filename) {
-    	return getConfig(filename,Config.class.getClassLoader());
+        return getConfig(filename, Execute.myCallersClass().getClassLoader());
     }
     
     public static Config getConfig(String filename, ClassLoader loader) {
@@ -224,7 +224,7 @@ public class Config implements Serializable{
     private void save(Properties oldProps, File destFile) throws IOException {
     	Map<Object, Object> change = new HashMap<Object, Object>();   	
 
-    	for (Map.Entry e : prop.entrySet()) {
+    	for (Map.Entry<Object, Object> e : prop.entrySet()) {
     		//if a new property is not the same as an old property
     		if (!e.getValue().equals(oldProps.get(e.getKey()))) {
     			change.put(e.getKey(), e.getValue());
