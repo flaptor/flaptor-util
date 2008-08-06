@@ -31,12 +31,16 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+
+import com.google.common.collect.Sets;
 
 /**
  * This class is implemented as a convenient way to store the application properties
@@ -61,7 +65,6 @@ public class Config implements Serializable{
     private final String filename;
     private String filePath;
     private Properties prop;
-
 
     /**
      * Retrieves a Config representation of System.getProperties().
@@ -295,6 +298,15 @@ public class Config implements Serializable{
     		ret+=value.toString();
     	}
     	return ret;
+    }
+    
+    /**
+     * Returns all the keys of the config's parameters. Using this method is possible to navigate the config.
+     * 
+     * @return a {@link Set} with the keys of the config's parameters.
+     */
+    public Set<String> getKeys() {
+        return Collections.unmodifiableSet(prop.stringPropertyNames());
     }
     
     /**
