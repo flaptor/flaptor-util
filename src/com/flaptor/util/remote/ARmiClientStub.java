@@ -112,4 +112,18 @@ public abstract class ARmiClientStub extends AClientStub {
     public String toString() {
         return host + ":" + port;
     }
+
+    public boolean equals(Object other){
+        if (null == other) return false;
+        if (! (other instanceof ARmiClientStub)) return false;
+        ARmiClientStub stub = (ARmiClientStub)other;
+        return (port == stub.port && host.equals(stub.host) && serviceName.equals(stub.serviceName));
+    }
+
+    public int hashCode(){
+        int hash = port;
+        hash ^= (null == host)?7919:host.hashCode();
+        hash ^= (null == serviceName)? 7919: serviceName.hashCode();
+        return hash;
+    }
 }
