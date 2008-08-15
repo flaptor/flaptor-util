@@ -85,6 +85,18 @@ public class RmiCodeGeneration {
                 CtClass generatedInterf = cp.makeInterface(remoteClassName);
                 generatedInterf.setSuperclass(cp.get(Remote.class.getCanonicalName()));
                 for (Class interf : interfaces) {
+                    // adding super interfaces
+                    Class enclosingClass = interf.getDeclaringClass();
+                    if ( null == enclosingClass)  {
+                        generatedInterf.setSuperclass(cp.get(interf.getCanonicalName()));
+                    } else { // special case for inner interfaces
+                        String clazzName = interf.getCanonicalName();
+                        int lastIndexOf = clazzName.lastIndexOf(".");
+                        if ( lastIndexOf > 0) 
+                            clazzName = clazzName.substring(0,lastIndexOf) + "$" + clazzName.substring(lastIndexOf + 1 );
+                        generatedInterf.setSuperclass(cp.get(clazzName));
+                    }
+
                     for (Method method : interf.getMethods()) {
                         if (objectMethods.contains(method)) {
                             logger.debug("skipping method from object: " + method);
@@ -99,7 +111,13 @@ public class RmiCodeGeneration {
                         for (int i = 0; i < paramTypes.length; ++i) newParamTypes[i] = cp.get(paramTypes[i].getCanonicalName());
         
                         CtMethod newMethod = new CtMethod(newRetType, method.getName(),newParamTypes, generatedInterf);
-                        newMethod.setExceptionTypes(new CtClass[] {cp.get(RemoteException.class.getCanonicalName())});
+                        Class[] declaredExceptions = method.getExceptionTypes();
+                        CtClass[] knownExceptions = new CtClass[declaredExceptions.length + 1];
+                        for (int i = 0; i < declaredExceptions.length; i++) {
+                            knownExceptions[i] = cp.get(declaredExceptions[i].getCanonicalName());
+                        }
+                        knownExceptions[declaredExceptions.length] = cp.get(RemoteException.class.getCanonicalName());
+                        newMethod.setExceptionTypes(knownExceptions);
                         generatedInterf.addMethod(newMethod);
                     }
                 }
@@ -194,15 +212,15 @@ public class RmiCodeGeneration {
      */
     public static Object reconnectableStub(String remoteClassName, final Class[] interfaces, String context, String host, int port, IRetryPolicy policy) {
         //need to generate the remote interface because RMI will instantiate it
-        getRemoteInterface(remoteClassName, interfaces);
+        final Class[] remoteInterfaces = new Class[]{getRemoteInterface(remoteClassName, interfaces)};
         final StubbingInvocationHandler stubbingInvocationHandler = new StubbingInvocationHandler();
         final ARmiClientStub myStub = new ARmiClientStub(port, host, context, policy) {
             protected void setRemote(Remote stub) {
-                stubbingInvocationHandler.setObjectProxy(proxy(stub, interfaces));
+                stubbingInvocationHandler.setObjectProxy(proxy(stub, remoteInterfaces));
             }
         };
         stubbingInvocationHandler.setRmiStub(myStub);
-        return Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), interfaces, stubbingInvocationHandler);
+        return Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), remoteInterfaces, stubbingInvocationHandler);
     }
 
     private static class StubbingInvocationHandler implements InvocationHandler {
@@ -215,12 +233,24 @@ public class RmiCodeGeneration {
             this.objectProxy = objectProxy;
         }
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        
+            
+            if (objectMethods.contains(method)) {
+                if (logger.isDebugEnabled()) logger.debug("running Object method " + method);
+                return method.invoke(this,args);
+            }
+            
+            
             try { 
                 rmiStub.checkConnection();
                 Object ret = method.invoke(objectProxy, args);
                 rmiStub.connectionSuccess();
                 return ret;
-            } catch (InvocationTargetException e) {
+            } catch (RemoteException re) { // this happens due to connection failure on checkConnection
+                logger.error(re,re);
+                rmiStub.connectionFailure();
+                throw new RpcException(re);
+            } catch (InvocationTargetException e) { // this happens due to exceptions on method.invoke
                 if (e.getCause() instanceof RemoteException) { 
                     logger.error(e,e);
                     rmiStub.connectionFailure();
@@ -232,5 +262,25 @@ public class RmiCodeGeneration {
                 }
             }
         }
+
+        
+        public boolean equals(Object other) {
+            if (null == other) return false;
+            if ( !(other instanceof Proxy) && !(other instanceof StubbingInvocationHandler)) return false;
+            if ( other instanceof Proxy) {
+                InvocationHandler ih = Proxy.getInvocationHandler(other);
+                if (ih instanceof StubbingInvocationHandler) return rmiStub.equals(((StubbingInvocationHandler)ih).rmiStub);
+                // else
+                return false;
+            }
+            // else it is a StubbingInvocationHandler
+
+            return rmiStub.equals(((StubbingInvocationHandler)other).rmiStub);
+        }
+        public int hashCode(){
+            if (null == rmiStub) return 0;
+            return rmiStub.hashCode();
+        }
+        
     };
 }
