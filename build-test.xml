@@ -29,6 +29,7 @@ limitations under the License.
 		<pathelement path="." />
 		<pathelement location="${build.dir}" />
 		<pathelement path="${conf.dir}" />
+		<pathelement path="${test.dir}" />
 		<path refid="cp-for-tools" />
 	</path>
 
