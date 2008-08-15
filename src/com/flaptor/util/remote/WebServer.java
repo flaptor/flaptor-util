@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.ContextHandler;
@@ -36,6 +35,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.xml.XmlConfiguration;
 
 import com.flaptor.util.FileUtil;
+import com.flaptor.util.Execute;
 
 /**
  * A WebServer to manage a single jetty AbstractHandler.
@@ -44,7 +44,7 @@ import com.flaptor.util.FileUtil;
  */
 public class WebServer extends AServer {
 
-	private static Logger logger = Logger.getLogger(com.flaptor.util.Execute.whoAmI());
+	private static Logger logger = Logger.getLogger(Execute.whoAmI());
 
 	private final Server webserver;
 	private final Map<String, AbstractHandler> handlers = new HashMap<String, AbstractHandler>(); 
@@ -62,13 +62,7 @@ public class WebServer extends AServer {
 			System.exit(-1);
 		}
 
-
-        String log4jConfigPath = FileUtil.getFilePathFromClasspath("log4j.properties");
-        if (null != log4jConfigPath ) {
-    		PropertyConfigurator.configureAndWatch(log4jConfigPath);
-        } else {
-            logger.warn("log4j.properties not found on classpath! Logging configuration will not be reloaded.");
-        }
+        Execute.configureLog4j();
 
 		Object handler = null;
 		try {
