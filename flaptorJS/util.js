@@ -112,8 +112,10 @@ if (!util) {
 		        location.search += "&" + param + "=" + value;
 		    }
 		},
+
+//////////////////////////// PAGINATION //////////////////////////////
 		changePage: function (add, defaultValue){
-		    pageNum = this.parseInt(getParam("page", 0));
+		    pageNum = parseInt(this.getParam("page", 0));
 		    this.setParam("page", pageNum + add);
 		},
 	};
