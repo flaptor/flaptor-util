@@ -45,7 +45,6 @@ public class CollectionsUtil {
      * 
      * @return a new list with all the elements of list1 and list2 sorted by their natural order
      */
-    @SuppressWarnings("unchecked")
     public static <T extends Comparable<T>> List<T> mergeLists(List<? extends T> list1, List<? extends T> list2) {
         return CollectionsUtil.<T>mergeLists(list1, list2, CollectionsUtil.<T>naturalComparator());
     }
