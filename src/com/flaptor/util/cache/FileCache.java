@@ -60,8 +60,9 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     //private static byte VERSION = 1; //old byte[] fileCache 
     private static byte VERSION = 2;
     
-    private String cachedir = null;
-    private final ADigester digester; 
+    protected String cachedir = null;
+    protected final ADigester digester; 
+
     
     private int subdirDepth = 2;
 
@@ -312,7 +313,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     }
 
     // Reads key from a stream.
-    private static String readKey (ObjectInputStream stream) {
+    protected static String readKey (ObjectInputStream stream) {
         try {
             return (String)stream.readObject();
         } catch (Exception e) {
@@ -590,7 +591,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     }
 
 
-    private interface ADigester {
+    protected interface ADigester {
         public String getDigest(String param) throws UnsupportedEncodingException;
     }
 
