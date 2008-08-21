@@ -265,7 +265,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
         }
     }
     
-    private ObjectInputStream openAndVerifyVersion(File file) throws IOException {
+    protected ObjectInputStream openAndVerifyVersion(File file) throws IOException {
         ObjectInputStream stream = open(file);
         int version = verifyVersion(stream);
         if (version <0) return null;
