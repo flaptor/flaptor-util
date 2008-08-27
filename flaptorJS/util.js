@@ -81,6 +81,13 @@ if (!util) {
 		    if (this.isEmpty(value)) return false;
 		    return isFinite(value);
 		},
+		isDate: function(value) {
+			regexp = new RegExp().compile("^(.{1,2})(\/|-)(.{1,2})(\/|-)(.{4})$");
+			matched = regexp.exec(value);
+		    if (matched == null) return false;
+		    return !isNaN(Date.parse(value));
+		},
+
 	
 		getText: function (id) {
 		    return document.getElementById(id).firstChild.nodeValue;
