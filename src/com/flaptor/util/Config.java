@@ -185,10 +185,11 @@ public class Config implements Serializable{
      * writes a "warn" to the logger. 
      *
      */
-    public synchronized void set(String key, String value) {
+    public synchronized Config set(String key, String value) {
         logger.warn("Forcing new key-value pair in the configuration. Key: "
                 + key + ", value: " + value);
         prop.setProperty(key, value);
+        return this;
     }
 
     /**
