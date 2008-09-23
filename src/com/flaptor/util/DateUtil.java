@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Utility class for managing dates 
@@ -140,4 +141,29 @@ public class DateUtil {
         cal.setTime(new Date(millis));
         return cal;
     }
+    
+    public static Date getDeltaFromDate(Date source, int field, int delta) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(source);
+        c.add(field, delta);
+        return c.getTime();
+    }
+
+    public static Date getMinDate(Iterable<Date> dates) {
+        Date min = null;
+        for (Date date : dates) {
+            if (min == null || min.after(date))
+                min = date;
+        }
+        return min;
+    }
+    public static Date getMaxDate(Iterable<Date> dates) {
+        Date max = null;
+        for (Date date : dates) {
+            if (max == null || max.before(date))
+                max = date;
+        }
+        return max;
+    }
+
 }
