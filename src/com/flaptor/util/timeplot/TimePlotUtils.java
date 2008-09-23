@@ -83,7 +83,7 @@ public class TimePlotUtils {
         String pattern = "0" + (precisionDecimals == 0 ? "" : ".") + new String(decimals);
         
         DecimalFormat decimalFormat = new DecimalFormat(pattern);
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+        DateFormat dateFormat = getDateFormat();
         
         List<Date> dates = Lists.sortedCopy(source.keySet());
         
@@ -112,6 +112,10 @@ public class TimePlotUtils {
         }
         
         return buffer.toString();
+    }
+
+    public static SimpleDateFormat getDateFormat() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
     }
 
 
