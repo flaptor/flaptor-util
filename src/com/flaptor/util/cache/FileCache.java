@@ -28,6 +28,11 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.zip.GZIPInputStream;
@@ -328,7 +333,6 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
      */
     public boolean hasItem (String key) {
         if (null == key ) return false;
-        //else
         return getAssociatedFile(key).exists();
     }
 
@@ -405,6 +409,18 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
         // else
         return true;
     }
+    
+    /**
+     * Returns true if the item is in the cache.
+     * @param key an identification for the item.
+     * @return true if the item is in the cache.
+     */
+    public Date getItemDate (String key) {
+        if (null == key ) return new Date(0);
+        File file = getAssociatedFile(key);
+        return new Date(file.lastModified());
+    }
+
 
     //returns the subdirectory where a digest should be placed,
     // according to the subdirectory depth level
@@ -627,144 +643,173 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     }
     
     private static void helpAndExit() {
-        String usage = "Cache get <dir> \nCache get <dir> <url>\nCache getobj <dir> \nCache getobj <dir> <url>\nCache getobjprop <dir> <method> \nCache getobjprop <dir> <method> <url>\nCache list <dir>\nCache translate <src dir> <src file depth> <dest dir> <dst file depth> ";
+        String usage = "\nCache <command> <args> [-dates <dd-mm-yyyy> <dd-mm-yyyy>]\n"
+        	+"\nCommands:\n"
+        	+"  get <dir> [<url>]\n"
+        	+"  getobj <dir> [<url>]\n"
+        	+"  getobjprop <dir> <method> [<url>]\n"
+        	+"  list <dir>\n"
+        	+"  translate <src-dir> <src-file-depth> <dest-dir> <dst-file-depth>\n";
         System.out.println(usage);
         System.exit(1);
+    }
+    
+    private static String[] extractDateRange(String[] args, Date[] range) {
+    	ArrayList<String> param = new ArrayList<String>();
+    	boolean datesFound = false;
+    	for (int i=0; i<args.length; i++) {
+    		if (args[i].startsWith("-dates")) {
+    			String from = args[++i];
+    			String to = args[++i] + " 23:59:59";
+    			range[0] = new SimpleDateFormat("dd-MM-yyyy").parse(from, new ParsePosition(0));
+    			range[1] = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(to,new ParsePosition(0));
+    			if (range[0].after(range[1])) {
+    				System.out.println("Start date should not be after end date");
+    				System.exit(1);
+    			}
+    			datesFound = true;
+    		} else {
+    			param.add(args[i]);
+    		}
+    	}
+    	if (!datesFound) {
+			range[0] = new Date(0);
+			range[1] = new Date(Long.MAX_VALUE);
+    	}
+    	return param.toArray(new String[]{});
+    }
+    
+    private static boolean betweenDates(Date date, Date[] range) {
+    	boolean beforeStart = date.before(range[0]);
+    	boolean afterEnd = date.after(range[1]);
+		return (!beforeStart && !afterEnd); // between both dates, inclusive
+    }
+
+    private static void showEntry(FileCache cache, String key, Object data, Date[] range) {
+    	if (null == data) {
+    		System.out.println("Page not found in cache");
+    	} else {
+        	Date date = cache.getItemDate(key);
+    		if (betweenDates(date, range)) {
+    			String str = (data instanceof byte[]) ? new String((byte[])data) : data.toString();
+    			System.out.println("-------");
+    			System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date));
+    			System.out.println();
+    			System.out.println(key);
+				System.out.println();
+				System.out.println(data);
+				System.out.println();
+			}
+		}
     }
 
     public static void main (String[] args) {
         if (args.length < 2) {
-        	helpAndExit();
-        }
-        if ("get".equals(args[0])) {
-            FileCache<byte[]> cache = new FileCache<byte[]>(args[1]);
-            switch (args.length) {
-            case 2:
-            	Iterator<String> it = cache.iterator();
-            	while (it.hasNext()) {
-            		String key = it.next();
-            		byte[] data = cache.getItem(key);
-            		System.out.println("-------");
-            		System.out.println(key);
-            		System.out.println();
-            		System.out.println(new String(data));
-            		System.out.println();
-            	}
-            	System.out.println("-------");
-            	break;
-            case 3:
-            	byte[] data = cache.getItem(args[2]);
-            	if (null == data) {
-            		System.out.println("Page not found in cache");
-            	} else {
-            		System.out.println();
-            		System.out.println(args[2]);
-            		System.out.println();
-            		System.out.println(new String(data));
-            		System.out.println();
-            	}
-            	break;
-            default: helpAndExit();
-            }
-        } else if ("getobj".equals(args[0])) {
-        	FileCache<Object> cache = new FileCache<Object>(args[1]);
-            switch (args.length) {
-            case 2:
-        		Iterator<String> it = cache.iterator();
-        		while (it.hasNext()) {
-        			String key = it.next();
-        			Object data = cache.getItem(key);
-        			System.out.println("-------");
-        			System.out.println(key);
-        			System.out.println();
-        			System.out.println(String.valueOf(data));
-        			System.out.println();
-        		}
-        		System.out.println("-------");
-            	break;
-            case 3:
-        		Object data = cache.getItem(args[2]);
-        		if (null == data) {
-        			System.out.println("Page not found in cache");
-        		} else {
-        			System.out.println();
-        			System.out.println(args[2]);
-        			System.out.println();
-        			System.out.println(data.toString());
-        			System.out.println();
-        		}
-            	break;
-            default: helpAndExit();
-        	}
-        } else if ("getobjprop".equals(args[0])) {
-        	FileCache<Object> cache = new FileCache<Object>(args[1]);
-            switch (args.length) {
-            case 3:
-        		Iterator<String> it = cache.iterator();
-        		while (it.hasNext()) {
-        			String key = it.next();
-        			Object data = getProperty(cache.getItem(key), args[2]);
-                    System.out.println("-------");
-                    System.out.println(key);
-                    System.out.println();
-                    System.out.println(String.valueOf(data));
-                    System.out.println();
-                }
-                System.out.println("-------");
-            	break;
-            case 4:
-                Object data = getProperty(cache.getItem(args[3]), args[2]);
-                if (null == data) {
-                    System.out.println("Page not found in cache");
-                } else {
-                    System.out.println();
-                    System.out.println(args[3]);
-                    System.out.println();
-                    System.out.println(String.valueOf(data));
-                    System.out.println();
-                }
-            	break;
-            default: helpAndExit();
-            }
-        } else if ("list".equals(args[0])) {
-            if (args.length == 2) {
-            	FileCache<Object> cache = new FileCache<Object>(args[1]);
-            	Iterator<String> en = cache.iterator();
-            	while (en.hasNext()) {
-            		System.out.println(en.next());
-            	}
-            } else {
-            	helpAndExit();
-            }
-        } else if ("purge".equals(args[0])) {
-        	if (args.length == 2) {
-        		FileCache<Object> cache = new FileCache<Object>(args[1]);
-        		Iterator<String> en = cache.iterator();
-        		while (en.hasNext()) {
-        			Object value = en.next();
-        			if (null == value) {
-        				System.out.println("Removing faulty cache entry");
-        				en.remove();
-        			}
-        		}
-        		System.out.println("Done.");
-            } else {
-            	helpAndExit();
-            }
-        } else if ("translate".equals(args[0])) {
-        	if (args.length == 5) {
-        		FileCache<byte[]> cacheSrc = new FileCache<byte[]>(args[1], Integer.parseInt(args[2]));
-        		FileCache<byte[]> cacheDest = new FileCache<byte[]>(args[3], Integer.parseInt(args[4]));
+    		helpAndExit();
+    	}
+        Date[] range = new Date[2];
+        String[] param = extractDateRange(args, range);
+        int arglen = param.length;
+    	if ("get".equals(param[0])) {
+    		FileCache<byte[]> cache = new FileCache<byte[]>(param[1]);
+    		switch (arglen) {
+    		case 2:
+    			Iterator<String> it = cache.iterator();
+    			while (it.hasNext()) {
+    				String key = it.next();
+    				byte[] data = cache.getItem(key);
+    				showEntry(cache, key, data, range);
+    			}
+    			System.out.println("-------");
+    			break;
+    		case 3:
+    			byte[] data = cache.getItem(param[2]);
+    			showEntry(cache, param[2], data, range);
+    			break;
+    		default: helpAndExit();
+    		}
+    	} else if ("getobj".equals(param[0])) {
+    		FileCache<Object> cache = new FileCache<Object>(param[1]);
+    		switch (arglen) {
+    		case 2:
+    			Iterator<String> it = cache.iterator();
+    			while (it.hasNext()) {
+    				String key = it.next();
+    				Object data = cache.getItem(key);
+    				showEntry(cache, key, data, range);
+    			}
+    			System.out.println("-------");
+    			break;
+    		case 3:
+    			Object data = cache.getItem(param[2]);
+    			showEntry(cache, param[2], data, range);
+    			break;
+    		default: helpAndExit();
+    		}
+    	} else if ("getobjprop".equals(param[0])) {
+    		FileCache<Object> cache = new FileCache<Object>(param[1]);
+    		switch (arglen) {
+    		case 3:
+    			Iterator<String> it = cache.iterator();
+    			while (it.hasNext()) {
+    				String key = it.next();
+    				Object data = getProperty(cache.getItem(key), param[2]);
+    				showEntry(cache, param[2], data, range);
+    			}
+    			System.out.println("-------");
+    			break;
+    		case 4:
+    			Object data = getProperty(cache.getItem(param[3]), param[2]);
+    			showEntry(cache, param[3], data, range);
+    			break;
+    		default: helpAndExit();
+    		}
+    	} else if ("list".equals(param[0])) {
+    		if (arglen == 2) {
+    			FileCache<Object> cache = new FileCache<Object>(param[1]);
+    			Iterator<String> en = cache.iterator();
+    			while (en.hasNext()) {
+    				String key = en.next();
+                	Date date = cache.getItemDate(key);
+                	if (betweenDates(date, range)) {
+                		System.out.println(key);
+                	}
+    			}
+    		} else {
+    			helpAndExit();
+    		}
+    	} else if ("purge".equals(param[0])) {
+    		if (arglen == 2) {
+    			FileCache<Object> cache = new FileCache<Object>(param[1]);
+    			Iterator<String> en = cache.iterator();
+    			while (en.hasNext()) {
+    				Object value = en.next();
+    				if (null == value) {
+    					System.out.println("Removing faulty cache entry");
+    					en.remove();
+    				}
+    			}
+    			System.out.println("Done.");
+    		} else {
+    			helpAndExit();
+    		}
+    	} else if ("translate".equals(param[0])) {
+    		if (arglen == 5) {
+    			FileCache<byte[]> cacheSrc = new FileCache<byte[]>(param[1], Integer.parseInt(param[2]));
+    			FileCache<byte[]> cacheDest = new FileCache<byte[]>(param[3], Integer.parseInt(param[4]));
 
-        		for (String key: cacheSrc) {
-        			System.out.println("translating " + key);
-        			cacheDest.addItem(key, cacheSrc.getItem(key));
-        		}
-        		System.out.println("Done.");
-            } else {
-            	helpAndExit();
-            }
-        }
+    			for (String key: cacheSrc) {
+                	Date date = cacheSrc.getItemDate(key);
+                	if (betweenDates(date, range)) {
+	    				System.out.println("translating " + key);
+	    				cacheDest.addItem(key, cacheSrc.getItem(key));
+                	}
+    			}
+    			System.out.println("Done.");
+    		} else {
+    			helpAndExit();
+    		}
+    	}
     }
 
     private static Object getProperty(Object object, String property) {
