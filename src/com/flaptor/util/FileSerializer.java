@@ -55,7 +55,7 @@ public class FileSerializer {
         }
         if (!ok && file.exists()) {
             try {
-                obj = IOUtil.deserialize(file.getAbsolutePath(), true);
+                obj = IOUtil.deserialize(file.getAbsolutePath(), compressed);
                 ok = true;
             } catch (Throwable t) {
             	logger.error(t,t);
@@ -63,7 +63,7 @@ public class FileSerializer {
         }
         if (!ok && oldFile.exists()) {
             try {
-                obj = IOUtil.deserialize(oldFile.getAbsolutePath(), true);
+                obj = IOUtil.deserialize(oldFile.getAbsolutePath(), compressed);
                 oldFile.renameTo(file);
             } catch (Throwable t) {
             	logger.error(t,t);
