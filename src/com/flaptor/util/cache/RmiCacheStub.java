@@ -74,11 +74,13 @@ public class RmiCacheStub<T extends Serializable> extends AClientStub implements
             registry = LocateRegistry.getRegistry(host, port);
         } catch (RemoteException e) {
             logger.error("Could not locate registry.", e);
+            policy.markFailure();
             return;
         }
         try {
             remoteCache = (RmiCache<T>) registry.lookup(RmiServer.DEFAULT_SERVICE_NAME);
-            logger.info("connected to remote cache at " + host + ":" + port);
+            logger.info("(re)connected to remote cache at " + host + ":" + port);
+            policy.markSuccess();
         } catch (RemoteException e) {
             logger.error("Error while looking up.", e);
         } catch (NotBoundException e) {

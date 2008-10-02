@@ -31,7 +31,7 @@ import com.flaptor.util.Execution.Results;
  *
  * @param <T> the type of the result of the tasks
  * 
- * @author Martin Massera
+ * @author Flaptor Development Team
  */
 public class MultiExecutor<T> {
 
@@ -58,6 +58,7 @@ public class MultiExecutor<T> {
     public void addExecution(Execution<T> e) {
         synchronized (executionQueue) {
             executionQueue.add(e);
+            executionQueue.notifyAll();
         }
     }
 
@@ -85,13 +86,19 @@ public class MultiExecutor<T> {
                 Execution<T> execution = null;
                 Callable<T> task = null;
                 
-                sleep(50);//if this isnt here there is a race condition and can cause starvation when adding tasks
-
                 synchronized(executionQueue) {
                     execution = executionQueue.peek();
-                    if (execution == null) {
-                        continue;
+                    while (null == execution) {
+                    	if (signaledToStop) {
+                    		stopped = true;
+                    		return;
+                    	}
+                    	try {
+                    		executionQueue.wait(200);
+                    	} catch (InterruptedException e) {}
+                    	execution = executionQueue.peek();
                     }
+                    
                     synchronized(execution) {
                         task = execution.pollTask();
 

@@ -22,53 +22,54 @@ package com.flaptor.util.remote;
  *
  */
 public class ExponentialFallbackPolicy implements IRetryPolicy {
-    private static final long MIN_WAIT = 1;
-    private static final long MAX_WAIT = 4096; //Approx. 4 seconds.
+    private static final long MIN_WAIT = 128;
+    private static final long MAX_WAIT = 16384; //Approx. 16 seconds.
+    
 
     private long failTime = 0;
     private long wait = 0;
-    private boolean skipping = true;
+    private CallingState callingState = CallingState.SKIP;
+    private ConnectionState connectionState = ConnectionState.DISCONNECTED; 
+    
     
     public synchronized boolean callServer() {
-        if (skipping) {
-            return false;
-        } else {
-            if (0L != wait) {
-                skipping = true;
-            }
-            return true;
-        }
+    	return callingState == CallingState.CALL;
     }
 
     public synchronized void markFailure() {
-        if (0L == wait) {
+        if (callingState == CallingState.CALL) { //first failure
             wait = MIN_WAIT;
-            skipping = true;
-        } else {
-            wait *= 2;
-            if (wait > MAX_WAIT) {
-                wait = MAX_WAIT;
-            }
+            failTime = System.currentTimeMillis();
+            callingState = CallingState.SKIP;
+            connectionState = ConnectionState.DISCONNECTED;
+        } else { //not the first failure
+        	if (connectionState == ConnectionState.RECONECTING) {
+        		wait *= 2;
+        		if (wait > MAX_WAIT) {
+        			wait = MAX_WAIT;
+        		}
+        	}
         }
-        failTime = System.currentTimeMillis();
     }
 
     public synchronized void markSuccess() {
-        skipping = false;
-        wait = 0L;
-        failTime = 0L;
+    	callingState = CallingState.CALL;
+    	connectionState = ConnectionState.CONNECTED;
     }
 
     public synchronized boolean reconnect() {
-        if (!skipping) {
-            return false;
+    	if (connectionState == ConnectionState.CONNECTED || connectionState == ConnectionState.RECONECTING) {
+    		return false;
+    	}
+        if (System.currentTimeMillis() > (failTime + wait)) {
+            connectionState = ConnectionState.RECONECTING;
+            return true;
         } else {
-            if (System.currentTimeMillis() > (failTime + wait)) {
-                skipping = false;
-                return true;
-            }
-            return false;
+        	return false;
         }
     }
+    
+    private enum CallingState {CALL, SKIP};
+    private enum ConnectionState {CONNECTED, DISCONNECTED, RECONECTING};
 
 }

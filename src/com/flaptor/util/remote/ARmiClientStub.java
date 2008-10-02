@@ -68,16 +68,17 @@ public abstract class ARmiClientStub extends AClientStub {
 
     public void checkConnection() throws RemoteException{
         boolean reconnect = policy.reconnect() || !remoteInitialized;
-//        System.out.println(this + " " + reconnect);
+System.out.println(this + " " + reconnect);
         if (reconnect) {
             try {
                 connect();
+                connectionSuccess();
             } catch (RemoteException e) {
                 connectionFailure();
                 throw e;
             }
         }
-//        System.out.println(this + " " + reconnect + " " + remoteInitialized + " ");
+System.out.println(this + " " + reconnect + " " + remoteInitialized + " ");
         
         // If policy does not allow to connect
         if (!policy.callServer())  {
