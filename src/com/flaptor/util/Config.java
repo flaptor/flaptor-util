@@ -40,6 +40,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -99,6 +100,11 @@ public class Config implements Serializable{
     private Config(String name, Properties props) {
         this.prop = props;
         this.filename = name;
+    }
+
+    protected Config() {
+        this.prop = null;
+        this.filename = null;
     }
 
 
@@ -169,7 +175,7 @@ public class Config implements Serializable{
 
 
     // Internal generic property getter
-    private synchronized String get(String key) {
+    protected synchronized String get(String key) {
         String p = prop.getProperty(key);
         if (null == p) {
             throw new IllegalStateException("Property " +key+ " not found");
@@ -569,6 +575,14 @@ public class Config implements Serializable{
 
     public String getFilename() {
         return filename;
+    }
+    
+    public Config prefix(String prefix) {
+        return new PrefixedConfig(this, prefix);
+    }
+    
+    public Map<String, String> asMap() {
+        return Maps.fromProperties(prop);
     }
 
 }
