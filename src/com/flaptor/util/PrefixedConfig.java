@@ -12,6 +12,22 @@ import java.util.Map.Entry;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+/**
+ * This class is a wrapper of Config that behaves like a Config object 
+ * except for the file related functionality (which is unsupported by this class)
+ * that adds a prefix to the wrapped config.
+ * 
+ * So for instance, if you have:
+ * 
+ * PrefixedConfig pc = new PrefixedConfig(myconfig, "some.prefix.");
+ * 
+ * then pc.getString("a") will behave like myconfig.getString("some.prefix.a")
+ * also, pc.getKeys() will return only the keys that begin with the given prefix
+ * and with that prefix removed. So if c.getKeys() is ["some.prefix.a", "some.prefix.b", 
+ * "something.else"] then pc.getKeys() will be ["a", "b"]
+ * 
+ * @author Santiago Perez (santip)
+ */
 public class PrefixedConfig extends Config {
 
     private static final long serialVersionUID = 1L;
