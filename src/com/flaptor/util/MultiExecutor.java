@@ -33,7 +33,7 @@ import com.flaptor.util.Execution.Results;
  * 
  * @author Flaptor Development Team
  */
-public class MultiExecutor<T> {
+public class MultiExecutor<T> implements Stoppable {
 
     protected List<Worker> workers = new ArrayList<Worker>();
     protected Queue<Execution<T>> executionQueue = new LinkedList<Execution<T>>();
@@ -60,6 +60,23 @@ public class MultiExecutor<T> {
             executionQueue.add(e);
             executionQueue.notifyAll();
         }
+    }
+
+    @Override
+    public void requestStop() {
+        for (Worker w : workers) {
+            w.requestStop();
+        }
+    }
+
+    @Override
+    public boolean isStopped() {
+        for (Worker w : workers) {
+            if (!w.isStopped()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
