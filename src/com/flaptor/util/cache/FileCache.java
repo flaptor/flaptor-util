@@ -697,7 +697,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     			System.out.println();
     			System.out.println(key);
 				System.out.println();
-				System.out.println(data);
+				System.out.println(str);
 				System.out.println();
 			}
 		}

@@ -17,6 +17,7 @@ public class ConfigTest extends TestCase {
     private final String configName2 = "configTest2.tmp";
     private final String configName3 = "configTest3.tmp";
     private final String configName4 = "configTest4.tmp";
+    private final String configName5 = "configTest5.tmp";
 
     private final String configText1 = "test1=true\ntest2=1\n";
     private final String configText2 = "#import configTest.tmp.defaults\ntest1=false\ntest3=foo\ntest";
@@ -24,10 +25,13 @@ public class ConfigTest extends TestCase {
                                        "#comment\ntest3=oof\ntest5=hola,\\\nchau,\\\npepe=1\n" + 
                                        "test6=hola,\\\nchau,\\\npepe=1\n";
     private final String configText4 = "#import " + configName3;
+    private final String configText5 = "millis1=7\nmillis2=7ms\nsec=7s\nmin=7m\nhour=7h\n" +
+                                       "day1=7d\nday2=7days\nday3=7 dias\n";
 
     private Config config;
     private Config config2;
     private Config config3;
+    private Config config5;
 
     public void setUp() {
         writeConfigFile(configNameDefaults, configText1);
@@ -38,6 +42,8 @@ public class ConfigTest extends TestCase {
         writeConfigFile(configName3, configText3);
         config3 = Config.getConfig(configName3);
         writeConfigFile(configName4, configText4);
+        writeConfigFile(configName5, configText5);
+        config5 = Config.getConfig(configName5);
         // Execute.sleep(1000);
     }
 
@@ -186,6 +192,27 @@ public class ConfigTest extends TestCase {
             super.unfilterOutput();
             // success
         }
+    }
+    
+    @TestInfo(testType = TestInfo.TestType.UNIT)
+    public void testTimeUnit() {
+    	// millis1=7 millis2=7ms sec=7s min=7m hour=7h day1=7d day2=7days day3=7 dias
+        assertEquals(7, config5.getTimePeriod("millis1","ms"));
+        assertEquals(7, config5.getTimePeriod("millis2","ms"));
+        assertEquals(7, config5.getTimePeriod("sec","s"));
+        assertEquals(7, config5.getTimePeriod("min","m"));
+        assertEquals(7, config5.getTimePeriod("hour","h"));
+        assertEquals(7, config5.getTimePeriod("day1","d"));
+        assertEquals(7, config5.getTimePeriod("day2","day"));
+        assertEquals(7, config5.getTimePeriod("day3","dias"));
+        assertEquals(0, config5.getTimePeriod("millis1","s"));
+        assertEquals(7*1000, config5.getTimePeriod("sec","ms"));
+        assertEquals(7*1000*60, config5.getTimePeriod("min","ms"));
+        assertEquals(7*1000*60*60, config5.getTimePeriod("hour","ms"));
+        assertEquals(7*1000*60*60*24, config5.getTimePeriod("day1","ms"));
+        assertEquals(7*60, config5.getTimePeriod("min","sec"));
+        assertEquals(7*60, config5.getTimePeriod("hour","min"));
+        assertEquals(7*24, config5.getTimePeriod("day1","hour"));
     }
     
     @TestInfo(testType = TestInfo.TestType.UNIT)

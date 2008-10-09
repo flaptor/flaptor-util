@@ -456,9 +456,57 @@ public class Config implements Serializable{
                 throw new IllegalArgumentException(error);
             }
         }
-
         return list;
+    }
 
+
+    private char normalizedTimeUnit(String unit) {
+        if ("".equals(unit) || "ms".equals(unit)) return 'l';
+        if ("smhd".indexOf(unit.charAt(0)) >= 0) return unit.charAt(0);
+    	throw new IllegalArgumentException();
+    }
+    
+    private long timeUnitMillis(String unit) {
+    	long v = 1;
+    	switch (normalizedTimeUnit(unit)) {
+    	case 'd': v *= 24;
+    	case 'h': v *= 60;
+    	case 'm': v *= 60;
+    	case 's': v *= 1000;
+    	}
+    	return v;
+    }
+    
+    /**
+     * Returns the value corresponding to the specified variable name, converted to a specified time unit.
+     * The time unit may be "ms", "s", "m", "h" or "d", or words starting with the letters s, m, h or d 
+     * (corresponding to seconds, minutes, hours and days).
+     * The variable may also specify a time unit. If it doesn't, it is assumed to be milliseconds.
+     * @param key the name of the requested variable 
+     * @return the variable's value converted to milliseconds
+     * @throws IllegalStateException if the requested property is not set
+     * @throws IllegalArgumentException if the value unit is not one of [ ms, s, m, h, d]
+     */
+    public long getTimePeriod(String key, String targetUnit) throws IllegalArgumentException {
+    	String value = get(key);
+    	value = value.replaceFirst("(\\D)"," $1");
+        String[] parts = value.split("\\s+");
+        String sourceUnit = "ms";
+        if (parts.length > 1) {
+        	sourceUnit = parts[1];
+        }
+        long time = 0;
+        try {
+            time = Long.parseLong(parts[0]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("getTime: Invalid number in property " + key + " = " + value);
+        }
+        try {
+        	time = time * timeUnitMillis(sourceUnit) / timeUnitMillis(targetUnit);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("getTime: Invalid time unit in property " + key + " = " + value);
+        }
+        return time;
     }
 
 
