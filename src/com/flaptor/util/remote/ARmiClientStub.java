@@ -66,9 +66,11 @@ public abstract class ARmiClientStub extends AClientStub {
     };
 
 
-    public void checkConnection() throws RemoteException{
+    /**
+     Reconnects to the searcher if necessary, and return wheather the rpc should be performed or not.
+    **/
+    public boolean checkConnection() throws RemoteException{
         boolean reconnect = policy.reconnect() || !remoteInitialized;
-System.out.println(this + " " + reconnect);
         if (reconnect) {
             try {
                 connect();
@@ -78,7 +80,6 @@ System.out.println(this + " " + reconnect);
                 throw e;
             }
         }
-System.out.println(this + " " + reconnect + " " + remoteInitialized + " ");
         
         // If policy does not allow to connect
         if (!policy.callServer())  {
@@ -90,13 +91,15 @@ System.out.println(this + " " + reconnect + " " + remoteInitialized + " ");
                 }
             // otherwise, just fail
             } else {
-                throw new RemoteException();
+                return false;
             }
         }
 
         if (!remoteInitialized) {
-            throw new RemoteException("Remote server never reached.");
+            return false;
         }
+
+        return true;
     }
 
     public void connectionSuccess() {
