@@ -16,12 +16,16 @@ limitations under the License.
 
 package com.flaptor.util.remote;
 
+import com.flaptor.util.Execute;
+import org.apache.log4j.Logger;
+
 /**
  * Implements a retry policy that, after a fail, waits before reconnecting
  * in exponentially increasing intervals, up to a maximum of 4 seconds.
  *
  */
 public class ExponentialFallbackPolicy implements IRetryPolicy {
+    private static final Logger logger = Logger.getLogger(Execute.whoAmI());
     private static final long MIN_WAIT = 128;
     private static final long MAX_WAIT = 16384; //Approx. 16 seconds.
     
@@ -33,10 +37,14 @@ public class ExponentialFallbackPolicy implements IRetryPolicy {
     
     
     public synchronized boolean callServer() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("policy: " + toString() + " callServer: currentCallState is " + callingState);
+        }
     	return callingState == CallingState.CALL;
     }
 
     public synchronized void markFailure() {
+        CallingState startState = callingState;
         if (callingState == CallingState.CALL) { //first failure
             wait = MIN_WAIT;
             failTime = System.currentTimeMillis();
@@ -44,29 +52,39 @@ public class ExponentialFallbackPolicy implements IRetryPolicy {
             connectionState = ConnectionState.DISCONNECTED;
         } else { //not the first failure
         	if (connectionState == ConnectionState.RECONECTING) {
+                connectionState = ConnectionState.DISCONNECTED;
         		wait *= 2;
         		if (wait > MAX_WAIT) {
         			wait = MAX_WAIT;
         		}
         	}
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("policy: " + toString() + " markFailure: from " + startState + " to " + callingState);
+        }
     }
 
     public synchronized void markSuccess() {
+        logger.debug("policy: " + toString() + " markingSuccess");
     	callingState = CallingState.CALL;
     	connectionState = ConnectionState.CONNECTED;
     }
 
     public synchronized boolean reconnect() {
+        boolean retVal;
+        ConnectionState startState = connectionState;
     	if (connectionState == ConnectionState.CONNECTED || connectionState == ConnectionState.RECONECTING) {
-    		return false;
-    	}
-        if (System.currentTimeMillis() > (failTime + wait)) {
+    		retVal = false;
+    	} else if (System.currentTimeMillis() > (failTime + wait)) {
             connectionState = ConnectionState.RECONECTING;
-            return true;
+            retVal = true;
         } else {
-        	return false;
+        	retVal = false;
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("policy: " + toString() + " reconnect: from " + startState + " to " + connectionState + "returning " + retVal);
+        }
+        return retVal;
     }
     
     private enum CallingState {CALL, SKIP};
