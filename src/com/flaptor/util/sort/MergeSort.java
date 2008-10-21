@@ -25,6 +25,9 @@ import java.util.Vector;
 
 /**
  * This class sorts a file that doesn't fit in available memory using the mergeSort algorithm.
+ * 
+ * This code is based on the code found in the book
+ * "Developing Java Software" by Winder and Roberts
  */
 public final class MergeSort {
 

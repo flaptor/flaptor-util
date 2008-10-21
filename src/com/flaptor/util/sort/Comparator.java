@@ -18,6 +18,9 @@ package com.flaptor.util.sort;
 
 /**
  * This interface defines a comparator so items can be sorted
+ * 
+ * This code is based on the code found in the book
+ * "Developing Java Software" by Winder and Roberts
  */
 public interface Comparator {
 

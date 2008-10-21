@@ -20,7 +20,10 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- *  An interface encapsulating Record information.
+ * An interface encapsulating Record information.
+ * 
+ * This code is based on the code found in the book
+ * "Developing Java Software" by Winder and Roberts
  */
 public interface RecordInformation {
 

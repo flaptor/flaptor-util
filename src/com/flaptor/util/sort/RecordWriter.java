@@ -19,7 +19,10 @@ package com.flaptor.util.sort;
 import java.io.IOException;
 
 /**
- *  This interface allows the sorting algorithm to write records to a file.
+ * This interface allows the sorting algorithm to write records to a file.
+ * 
+ * This code is based on the code found in the book
+ * "Developing Java Software" by Winder and Roberts
  */
 public interface RecordWriter {
 

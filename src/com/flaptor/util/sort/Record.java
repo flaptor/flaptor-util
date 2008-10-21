@@ -18,6 +18,9 @@ package com.flaptor.util.sort;
 
 /**
  * The records that implement this interface can be sorted.
+ * 
+ * This code is based on the code found in the book
+ * "Developing Java Software" by Winder and Roberts
  */
 public interface Record {}
 

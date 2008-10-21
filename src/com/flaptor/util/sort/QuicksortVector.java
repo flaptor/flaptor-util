@@ -19,7 +19,10 @@ package com.flaptor.util.sort;
 import java.util.Vector;
 
 /**
- *  Sort an array of Objects using Quicksort.
+ * Sort an array of Objects using Quicksort.
+ * 
+ * This code is based on the code found in the book
+ * "Developing Java Software" by Winder and Roberts
  */
 public class QuicksortVector {
 
