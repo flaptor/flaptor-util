@@ -1,10 +1,11 @@
 package com.flaptor.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.SimpleTimeZone;
 
 /**
  * Utility class for managing dates 
@@ -164,6 +165,31 @@ public class DateUtil {
                 max = date;
         }
         return max;
+    }
+
+    public static ThreadLocal<SimpleDateFormat> getThreadLocalDateFormat(final String format) {
+        return new ThreadLocal<SimpleDateFormat>() {
+            @Override
+            protected SimpleDateFormat initialValue() {
+                return new SimpleDateFormat(format);
+            }
+        };
+    }
+
+    public static ThreadLocal<SimpleDateFormat> getThreadLocalGMTDateFormat(final String format) {
+        return new ThreadLocal<SimpleDateFormat>() {
+            @Override
+            protected SimpleDateFormat initialValue() {
+                return getGMTDateFormat(format);
+            }
+        };
+    }
+    
+    public static SimpleDateFormat getGMTDateFormat(String strFormat) {
+        SimpleDateFormat format = new SimpleDateFormat(strFormat);
+        Calendar gmt = Calendar.getInstance(new SimpleTimeZone(0, "GMT"));
+        format.setCalendar(gmt);
+        return format;
     }
 
 }
