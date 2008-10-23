@@ -74,7 +74,7 @@ public abstract class ARmiClientStub extends AClientStub {
         if (reconnect) {
             try {
                 connect();
-                connectionSuccess();
+                return true;
             } catch (RemoteException e) {
                 connectionFailure();
                 throw e;
