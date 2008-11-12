@@ -124,7 +124,7 @@ if (!util) {
 		changePage: function (add, defaultValue){
 		    pageNum = parseInt(this.getParam("page", 0));
 		    this.setParam("page", pageNum + add);
-		},
+		}
 	};
 
 	String.prototype.trim = function() {
