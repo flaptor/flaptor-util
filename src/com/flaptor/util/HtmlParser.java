@@ -40,6 +40,9 @@ import com.flaptor.util.Execute;
 import com.flaptor.util.FileUtil;
 import com.flaptor.util.Pair;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+
 /**
  * This class implements a parser for html documents.
  * @author Flaptor Development Team
@@ -48,7 +51,7 @@ public class HtmlParser {
 
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
     private static final String HTMLPARSER_CONTENT = "HTML_PARSER_CONTENT_FIELD";
-    private DOMParser parser;
+    private BlockingQueue<DOMParser> parsers;
     private String xpathIgnore=null;
     // map field - xpath
     private Map<String,String> fieldDefinitions;
@@ -103,13 +106,20 @@ public class HtmlParser {
      * If null, the default SEPARATOR_TAGS are used.  
      */
     public HtmlParser(String ignoreXPath, String[] separatorTags, Map<String,String> fieldDefinitions) {
-        parser = new org.cyberneko.html.parsers.DOMParser();
-        try {
-            parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", true);
-            parser.setProperty("http://cyberneko.org/html/properties/default-encoding","UTF-8");
-        } catch (Exception e) { 
-            logger.warn("Setting nekohtml parser encoding options", e);
+        int processors = Runtime.getRuntime().availableProcessors();
+        logger.info("constructor: found " + processors + " processors. Creating the same number of parsers.");
+        parsers = new ArrayBlockingQueue<DOMParser>(processors);
+        for (int i = 0; i < processors; i++) {
+            DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
+            try {
+                parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", true);
+                parser.setProperty("http://cyberneko.org/html/properties/default-encoding","UTF-8");
+            } catch (Exception e) { 
+                logger.error("Setting nekohtml parser encoding options", e);
+            }
+            parsers.add(parser);
         }
+
         if (null != ignoreXPath && 0 < ignoreXPath.length()){
             xpathIgnore= ignoreXPath;
         }
@@ -297,7 +307,8 @@ public class HtmlParser {
         content= REGEXP_HTML.matcher(content).replaceFirst("<html>");
         // Parser keeps state, synchronize in case its used in a multi-threaded setting.
         Output out = new Output(url);
-        synchronized (this) {
+        DOMParser parser = parsers.take();
+        try {
             try {
                 // use cyberneko to parse the html documents (even broken ones)
                 org.xml.sax.InputSource inputSource = new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(content.getBytes("UTF-8")));
@@ -334,6 +345,8 @@ public class HtmlParser {
 
             // extract special fields
             extractFields(htmlDoc,out);
+        } finally {
+            parsers.add(parser);
         }
         out.close();
         return out;

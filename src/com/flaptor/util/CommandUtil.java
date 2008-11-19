@@ -72,7 +72,7 @@ public class CommandUtil {
      * @param port -1 for standard port
      * @param command
      * @param msTimeout a timeout in MS, -1 for no timeout
-     * @return
+	 * @return a triad of return code, stdout contents, stderr contents
      * @throws IOException 
      */
     public static Triad<Integer, String, String> remoteSSHCommand(String host, int port, String command, int msTimeout) throws IOException {
