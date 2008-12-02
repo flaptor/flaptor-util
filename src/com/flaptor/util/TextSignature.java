@@ -16,8 +16,12 @@ limitations under the License.
 
 package com.flaptor.util;
 
+import com.flaptor.util.compression.CompressedIntSequence;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -26,7 +30,7 @@ import java.io.Serializable;
 public class TextSignature implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    protected int[] components = null;
+    protected CompressedIntSequence components = null;
 
     // Adds a word to the hash.
     private int addWord (int hash, String word) {
@@ -48,7 +52,7 @@ public class TextSignature implements Serializable {
      */
     public TextSignature (String text) {
 
-        components = new int[256];
+        int[] data = new int[256];
 
         String[] words = text.split("\\W+"); // should be changed by a customized implementation (for speed).
         int windowSize = 4;
@@ -63,14 +67,16 @@ public class TextSignature implements Serializable {
                 hashing = true;
             }
             if (hashing) {
-                components[hash%256]++;
+                data[hash%256]++;
                 hash = removeWord(hash, words[tail]);
             }
             head++;
             tail++;
         }
-
+        
+        components = new CompressedIntSequence(data);
     }
+
 
 
     /**
@@ -79,96 +85,85 @@ public class TextSignature implements Serializable {
      * @param otherSig the other signature.
      * @return A float in the 0..1 range indicating the similarity to the provided signature. 0 means different, 1 means equal.
      */
-    public float compareTo (TextSignature otherSig) {
+    public float compareTo (TextSignature other) {
         int union_size = 0;
         int intersection_size = 0;
+        int[] data1 = components.getUncompressed();
+        int[] data2 = other.components.getUncompressed();
         for (int i=0; i<256; i++) {
-            union_size += Math.max(components[i], otherSig.components[i]);
-            intersection_size += Math.min(components[i], otherSig.components[i]);
+            union_size += Math.max(data1[i], data2[i]);
+            intersection_size += Math.min(data1[i], data2[i]);
         }
         return (float)intersection_size / union_size;
     }
 
-    /**
-     * Exports this siganture into a string.
-     * @return a string that represents this signature.
-     */
-    private void writeObject(ObjectOutputStream oos) throws IOException {
-        for (int i=0; i<256; i++) {
-            int val = components[i];
-            if (val < 0xFC) { // FC=11111100, we could use the lowest two bits as the number of bytes to read next.
-                oos.writeByte(val);
-            } else {
-                oos.writeByte(0xFF);
-                oos.writeInt(val);
-            }
-        }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof TextSignature)) { return false; }
+        return components.equals(((TextSignature)other).components);
     }
 
-    /**
-     * Imports this siganture from a string.
-     * @param str a string that represents a signature.
-     */
-    private void readObject (ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        components = new int[256];
-        for (int i=0; i<256; i++) {
-            int val = ois.readByte();
-            if (val < 0) val += 256; // convert signed to unsigned
-            if (val >= 0xFC) {
-                val = ois.readInt();
-            } else
-            components[i] = val;
-        }
-    }
-
-
-    /**
-     * @override
-     * 
-     * only equals if the other is TextSignature and components are the
-     * same, for every component
-     */
-    public boolean equals(Object obj) {
-        if (!(obj instanceof TextSignature)) return false;
-        TextSignature other = (TextSignature)obj;
-        return java.util.Arrays.equals(components, other.components);
-    }
-
+    @Override
     public int hashCode() {
-        return components[0];
+        return components.hashCode();
     }
 
+    @Override
     public String toString() {
-        String sep = "";
-        StringBuffer buf = new StringBuffer();
-        buf.append("[");
-        for (int i=0; i<256; i++) {
-            buf.append(sep+components[i]);
-            sep = ",";
-        }
-        buf.append("]");
-        return buf.toString();
+        return components.toString();
     }
 
+    // For testing purposes
     public static void main (String[] args) throws Exception {
-        File file1 = new File(args[0]);
-        File file2 = new File(args[1]);
-        char[] car1 = new char[1000000];
-        char[] car2 = new char[1000000];
+/*
         try {
-            FileReader fr1 = new FileReader(file1);
-            FileReader fr2 = new FileReader(file2);
-            fr1.read(car1);
-            fr2.read(car2);
+            File file1 = new File(args[0]);
+            File file2 = new File(args[1]);
+            String string1 = FileUtil.readFile(file1);
+            String string2 = FileUtil.readFile(file2);
+            TextSignature t1 = new TextSignature(string1);
+            TextSignature t2 = new TextSignature(string2);
+            System.out.println("Similarity: " + t1.compareTo(t2));
         } catch (Exception e) {
             System.out.println(e);
             System.exit(1);
         }
-        String string1 = new String(car1);
-        String string2 = new String(car2);
-        TextSignature t1 = new TextSignature(string1);
-        TextSignature t2 = new TextSignature(string2);
-        System.out.println("Similarity: " + t1.compareTo(t2));
+*/
+
+        File dir = FileUtil.createTempDir("","");
+        File file = new File(dir,"signature.tst");
+        long max = 100000;
+        for (int i=0; i<max; i++) {
+            String text = TestUtils.randomText(10,500);
+//            System.out.println("=================================================================");
+//            System.out.println(text);
+//            System.out.println("-----------------------------------------------------------------");
+   
+            TextSignature sig1 = new TextSignature(text);
+            int[] data = sig1.components.getUncompressed();
+
+            ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file, false), 16000));
+            outputStream.writeObject(sig1);
+            outputStream.close();
+
+            ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file), 16000));
+            TextSignature sig2 = (TextSignature)inputStream.readObject();
+  
+            if (!sig1.equals(sig2)) {
+                System.out.println("ERROR! Sig serialization self-mismatch");
+                System.exit(-1);
+            }
+            
+            if (sig1.compareTo(sig2) != 1.0f) {
+                System.out.println("ERROR! Sig serialization self-mismatch");
+                System.exit(-1);
+            }
+
+//            System.out.println("SIG ("+data.length+" bytes): "+sig1.toString());
+        }
+        System.out.println("Ok!");
+        FileUtil.deleteDir(dir);
     }
 
 }

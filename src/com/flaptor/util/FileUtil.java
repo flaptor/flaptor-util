@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  */
 public final class FileUtil {
 
-    private static Logger stdLogger = Logger.getLogger(Execute.whoAmI());
+    private static Logger logger = Logger.getLogger(Execute.whoAmI());
 
     //so that it cannot be instantiated.
     private FileUtil() {}
@@ -111,16 +111,16 @@ public final class FileUtil {
     }
 
     /**
-     * Copies one file to another
+     * Copies one file to another, optionally appending.
      * @param from the file to be copied.
      * @param to the destination file.
      * @return true if successful, false otherwise.
      */
-    public static boolean copyFile (File from, File to) {
+    public static boolean copyFile (File from, File to, boolean append) {
         boolean ok = true;
         try {
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(from), 64*1024);
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(to), 64*1024);
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(to,append), 64*1024);
             byte[] buf = new byte[8*1024];
             int len = 0;
             while ((len = in.read(buf)) != -1) {
@@ -129,9 +129,20 @@ public final class FileUtil {
             in.close();
             out.close();
         } catch (IOException e) {
+            logger.warn("Copying file "+from.getName()+" to "+to.getName()+": "+e);
             ok = false;
         }
         return ok;
+    }
+
+    /**
+     * Copies one file to another, overwriting the destination file.
+     * @param from the file to be copied.
+     * @param to the destination file.
+     * @return true if successful, false otherwise.
+     */
+    public static boolean copyFile (File from, File to) {
+        return copyFile(from,to,false);
     }
 
     /**
@@ -172,7 +183,7 @@ public final class FileUtil {
      * It uses a default Logger
      */
     public static boolean fileToSet(final String dirname, final String filename, final Set<String> set) {
-        return fileToSet(dirname,filename,set,stdLogger);
+        return fileToSet(dirname,filename,set,logger);
     }
 
     /**
@@ -202,7 +213,7 @@ public final class FileUtil {
      * It uses a default Logger
      */
     public static boolean fileToList(final String dirname, final String filename, final List<String> list) {
-        return fileToList(dirname,filename,list,stdLogger);
+        return fileToList(dirname,filename,list,logger);
     }
     
 
@@ -249,7 +260,7 @@ public final class FileUtil {
      */
     public static boolean setToFile(final String dirname, final String filename, final Set<String> set) {
         List<String> list = new ArrayList<String>(set);
-        return listToFile(dirname, filename, list,stdLogger);
+        return listToFile(dirname, filename, list,logger);
     }
 
 
@@ -260,7 +271,7 @@ public final class FileUtil {
      * It uses a default Logger
      */
     public static boolean listToFile(final String dirname, final String filename, final List<String> list) {
-        return listToFile(dirname,filename,list,stdLogger);
+        return listToFile(dirname,filename,list,logger);
     }
 
     

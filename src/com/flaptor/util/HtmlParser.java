@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -127,7 +128,7 @@ public class HtmlParser {
             SEPARATOR_TAGS= separatorTags;
         }
         this.fieldDefinitions = fieldDefinitions;
-        if (null == fieldDefinitions ) this.fieldDefinitions = new HashMap<String,String>();
+        if (null == fieldDefinitions) this.fieldDefinitions = new HashMap<String,String>();
     }
 
     /**
@@ -205,11 +206,13 @@ public class HtmlParser {
         private String text;
         private List<Pair<String,String>> links;
         private String title = "";
+        private String url = null;
         private URI baseUri = null;
         // map field - content
         private Map<String,StringBuffer> fields;
 
         public Output(String url) throws URISyntaxException {
+            this.url = url;
             if (url.length() > 0) {
                 baseUri = getURI(url);
             }
@@ -259,6 +262,10 @@ public class HtmlParser {
         public void setTitle(String title) {
             this.title = title.trim();
         }
+        
+        public void setBaseUrl(String baseUrl) throws URISyntaxException {
+            baseUri = getURI(baseUrl);
+        }
 
         protected void close(){
             text = fields.get(HTMLPARSER_CONTENT).toString();
@@ -270,6 +277,10 @@ public class HtmlParser {
             return text;
         }
 
+        public String getUrl() {
+            return url;
+        }
+        
         public List<Pair<String,String>> getLinks() {
             return links;
         }
@@ -325,7 +336,7 @@ public class HtmlParser {
                 htmlDoc = reader.read(document);                
             } catch (java.lang.StackOverflowError e) {
                 logger.warn("Out of stack memory trying to parse ["+content+"]");
-                throw new Exception();
+                throw e;
             }
             // this 2 must be before the ignoreXPath, else an ignoreXPath that
             // includes the //TITLE will imply that the title is not indexed
@@ -355,26 +366,37 @@ public class HtmlParser {
 
 
     private void extractTitle(Document htmlDoc, Output out){
-        Node titleNode = htmlDoc.selectSingleNode("//TITLE");
+        Node titleNode = htmlDoc.selectSingleNode("//TITLE|//title|//Title");
         if (null != titleNode) {
             out.setTitle(titleNode.getText());
         }
     }
     
     @SuppressWarnings("unchecked")
-    private void extractLinks(Document htmlDoc, Output out){
-        List links = htmlDoc.selectNodes("//A");
-        for (Iterator iter = links.iterator(); iter.hasNext(); ) {
-            Element link = (Element) iter.next();
-            Attribute href = link.attribute("href");                   
-            if (null != href) {
-                try {
-                    out.addLink(href.getValue(), link.getText());
-                } catch (Exception e) {
-                    logger.debug("Exception occurred, ignoring link " + 
-                            link.getText() + " at " + href.getValue(), e);
+    private void extractLinks(Document htmlDoc, Output out) {
+        try {
+            Node baseNode = htmlDoc.selectSingleNode("//BASE|//Base|//base");
+            if (null != baseNode) {
+                String base = ((Element) baseNode).attribute("href").getValue();
+                if (null != base) {
+                    out.setBaseUrl(base);
                 }
             }
+            List links = htmlDoc.selectNodes("//A|//a");
+            for (Iterator iter = links.iterator(); iter.hasNext();) {
+                Element link = (Element) iter.next();
+                Attribute href = link.attribute("href");
+                if (null != href) {
+                    try {
+                        out.addLink(href.getValue(), link.getText());
+                    } catch (URISyntaxException e) {
+                        logger.debug("Exception occurred, ignoring link " +
+                                     link.getText() + " at " + href.getValue(), e);
+                    }
+                }
+            }
+        } catch (URISyntaxException e) {
+            logger.debug("Exception occurred, ignoring links in "+out.getUrl(), e);
         }
     }
 
@@ -411,12 +433,12 @@ public class HtmlParser {
     @SuppressWarnings("unchecked")
     private void replaceSeparatorTags(Document htmlDoc){
         for (String tag: SEPARATOR_TAGS ){                
-            List<Element> nodes= (List<Element>) htmlDoc.selectNodes("//" + tag.toUpperCase());
+            List<Element> nodes = (List<Element>) htmlDoc.selectNodes("//" + tag.toUpperCase());
             for (Element node: nodes){
                 try {
                     // The 'separator' must be created each time inside the for,
                     // else there is a 'already have a parent' conflict
-                    Node separator= DOMDocumentFactory.getInstance().createText(SEPARATOR);
+                    Node separator = DOMDocumentFactory.getInstance().createText(SEPARATOR);
                     node.add(separator);
                 } catch (Exception e) {
                     logger.debug("Ignoring exception, not appending at " + node.getPath());
@@ -431,7 +453,7 @@ public class HtmlParser {
         if (null == xpathIgnore){ 
             return;
         }
-        List<Node> nodes= (List<Node>) htmlDoc.selectNodes(xpathIgnore.toString());
+        List<Node> nodes = (List<Node>) htmlDoc.selectNodes(xpathIgnore.toString());
         for (Node node: nodes){
             try {
                 node.detach();
@@ -478,12 +500,16 @@ public class HtmlParser {
     public static void main(String[] arg) throws Exception {
         HtmlParser parser = new HtmlParser();
         //parser.test(arg[0],arg[1]);
-        
-        File fin= new File(arg[0]);
-        String sin=FileUtil.readFile(fin);
-        Output res= parser.parse("http://url.com", sin);
-        System.out.println("------------------*************-------------");
-        System.out.println(res.getText());
+        String str = FileUtil.readFile(new File(arg[0]));
+        String url = "http://url.com";
+        if (arg.length > 1) { url = arg[1]; }
+        Output out = parser.parse(url, str);
+        System.out.println("-------------------------------------------");
+        System.out.println("TITLE: "+out.getTitle());
+        for (Pair<String,String> link : out.getLinks()) {
+            System.out.println("LINK: "+link.first()+"  ("+link.last()+")");
+        }
+        System.out.println("CONTENT: "+out.getText());
     }
 
 }

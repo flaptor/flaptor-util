@@ -60,7 +60,6 @@ public abstract class ARmiClientStub extends AClientStub {
     		this.setRemote(remote);
             remoteInitialized = true;
     	} else {
-    		logger.error("Could not get remote service: " + serviceName + "@" + host + ":" + port);
     		throw new RemoteException("Could not get remote service: " + serviceName + "@" + host + ":" + port);
     	}
     };
