@@ -21,6 +21,10 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+
+
 /**
  * Utility class to parse xml using dom4j
  * without using DocumentHelper, which creates
@@ -32,10 +36,15 @@ import org.dom4j.io.SAXReader;
 public class DocumentParser {
 
 	private static final Logger logger = Logger.getLogger(Execute.whoAmI());
-	private SAXReader reader;
+	private BlockingQueue<SAXReader> readers;
 
 	public DocumentParser() {
-		reader = new SAXReader();
+        int processors = Runtime.getRuntime().availableProcessors();
+        logger.info("constructor: found " + processors + " processors. Creating the same number of readers.");
+        readers = new ArrayBlockingQueue<SAXReader>(processors);
+        for (int i = 0; i < processors; i++) {
+            readers.add( new SAXReader());
+        }
 	}
 
     /**
@@ -51,16 +60,20 @@ public class DocumentParser {
             throw new IllegalArgumentException();
         }
         Document doc;
+        SAXReader reader = null;
         try {
-            //we assume that SAXReader.read() is not thread-safe
-            synchronized (reader) {
-                //XXX TODO: getBytes should return a stream encoded in utf-8, to ensure it will work even if
-                //that's not the default.
-                doc = reader.read(new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(s.getBytes())));
-            }
+            reader = readers.take();
+            doc = reader.read(new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(s.getBytes())));
         } catch (DocumentException e) {
-            logger.debug("genDocument: cannot convert text to document.",e);
+            logger.debug("genDocument: cannot convert text to document.", e);
             return null;
+        } catch (InterruptedException e) {
+            logger.error("genDocument: interrupted while trying to get a reader.", e);
+            return null;
+        } finally {
+            if (null != reader) {
+                readers.add(reader);
+            }
         }
         return doc;
     }
