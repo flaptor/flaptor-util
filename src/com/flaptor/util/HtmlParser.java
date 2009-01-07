@@ -325,7 +325,7 @@ public class HtmlParser {
                 org.xml.sax.InputSource inputSource = new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(content.getBytes("UTF-8")));
                 parser.parse(inputSource);
             } catch (Exception e) {
-                logger.debug("Exception while trying to parse ["+content+"]");
+                logger.warn("Exception while trying to parse "+url);
                 throw e;
             }
             DOMReader reader = new DOMReader();
@@ -335,7 +335,7 @@ public class HtmlParser {
                 org.w3c.dom.Document document = parser.getDocument();                
                 htmlDoc = reader.read(document);                
             } catch (java.lang.StackOverflowError e) {
-                logger.warn("Out of stack memory trying to parse ["+content+"]");
+                logger.warn("Out of stack memory trying to parse "+url);
                 throw e;
             }
             // this 2 must be before the ignoreXPath, else an ignoreXPath that
@@ -377,9 +377,18 @@ public class HtmlParser {
         try {
             Node baseNode = htmlDoc.selectSingleNode("//BASE|//Base|//base");
             if (null != baseNode) {
-                String base = ((Element) baseNode).attribute("href").getValue();
-                if (null != base) {
-                    out.setBaseUrl(base);
+                Attribute href = ((Element) baseNode).attribute("href");
+                if (null == href) {
+                    href = ((Element) baseNode).attribute("HREF");
+                    if (null == href) {
+                        href = ((Element) baseNode).attribute("Href");
+                    }
+                }
+                if (null != href) {
+                    String base = href.getValue();
+                    if (null != base) {
+                        out.setBaseUrl(base);
+                    }
                 }
             }
             List links = htmlDoc.selectNodes("//A|//a");
