@@ -34,4 +34,13 @@ public abstract class AClientStub {
         this.host = host;
         this.policy = policy;
     }
+    
+    public int getPort() {
+        return port;
+    }
+    
+    public String getHost() {
+        return host;
+    }
+    
 }
