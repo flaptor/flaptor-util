@@ -37,7 +37,7 @@ public final class MergeSort {
      * @param fileout the name of the output sorted file
      * @param rInfo the RecordInformation object
      */ 
-    public static void sort (File filein, File fileout, RecordInformation rInfo) throws FileNotFoundException, IOException {
+    public static void sort (File filein, File fileout, RecordInformation rInfo, SortProgressReporting progress) throws FileNotFoundException, IOException {
         // Get whatever tmp files may be left from an interrupted sort operation.
         File parent = filein.getParentFile();
         Vector<File> tmpFiles = new Vector<File>(Arrays.asList(parent.listFiles(new TmpFilesFilter())));
@@ -49,7 +49,7 @@ public final class MergeSort {
                 cleanUpTmp (tmpFiles);
             }
             // Perform the initial dispersion into sorted files.
-            tmpFiles = distributeSortedBlocks (filein, fileout.getParentFile(), rInfo);
+            tmpFiles = distributeSortedBlocks (filein, fileout.getParentFile(), rInfo, progress);
             // Delete original file, it is no longer needed and uses up space.
             filein.delete();
         }
@@ -61,7 +61,7 @@ public final class MergeSort {
                 fileout.delete();
             }
             // Merge the sorted files.
-            mergeSortedBlocks (tmpFiles, fileout, rInfo);
+            mergeSortedBlocks (tmpFiles, fileout, rInfo, progress);
             // Cleanup.
             cleanUpTmp (tmpFiles);
         }
@@ -100,13 +100,14 @@ public final class MergeSort {
     /**
      * Perform the initial dispersion of the data.
      */    
-    private static Vector<File> distributeSortedBlocks (File from, File tmpDir, RecordInformation rInfo) throws FileNotFoundException, IOException {
+    private static Vector<File> distributeSortedBlocks (File from, File tmpDir, RecordInformation rInfo, SortProgressReporting progress) throws FileNotFoundException, IOException {
         RecordReader reader = rInfo.newRecordReader(from);
         Vector<File> files = new Vector<File>();
         Runtime.getRuntime().gc(); // free memory
         long startingMem = Runtime.getRuntime().freeMemory();
 //System.out.println("startingMem = " + Math.round(startingMem/1024/102.4f)/10.0f + " MB");
         boolean allDone = false;
+        if (null != progress) progress.startSort();
         for (int i = 0; ! allDone; i++) {
             // Pull in a few records, put them into the Vector
             // that is where we are performing the internal sort
@@ -139,6 +140,8 @@ public final class MergeSort {
                 writer.writeRecord(rec.elementAt(j));
             }
             writer.close();
+            // report progress
+            if (null != progress) progress.reportSorted(rec.size());
             // free memory
             rec.clear();
             rec = null;
@@ -151,7 +154,7 @@ public final class MergeSort {
     /**
      * Undertake a round of merging.
      */
-    private static void mergeSortedBlocks (Vector filesIn, File fileOut, RecordInformation rInfo) throws FileNotFoundException, IOException {
+    private static void mergeSortedBlocks (Vector filesIn, File fileOut, RecordInformation rInfo, SortProgressReporting progress) throws FileNotFoundException, IOException {
         // Open up the set of Readers and the Writer.
         RecordReader[] readers = new RecordReader[filesIn.size()];
         for (int i = 0 ; i < readers.length ; i++) {
@@ -163,6 +166,8 @@ public final class MergeSort {
         for (int j = 0; j < readers.length; j++) {
             rec[j] = readers[j].readRecord();
         }
+        if (null != progress) progress.startMerge();
+        long count = 0;
         while (true) {
             // Determine which is the next Record to add to the output stream.
             int index = findAppropriate(rec, rInfo.getComparator());
@@ -172,7 +177,16 @@ public final class MergeSort {
             writer.writeRecord(rec[index]);
             // Draw a new Record from the file whose Record was chosen
             rec[index] = readers[index].readRecord();
+            // Report progress
+            if (null != progress) {
+                count++;
+                if (count >= 10) {
+                    progress.reportMerged(count);
+                    count = 0;
+                }
+            }
         }
+        if (null != progress) progress.reportMerged(count);
         // Cleanup.
         writer.close();
         for (int i = 0; i < readers.length; i++) {
