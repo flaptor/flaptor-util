@@ -336,7 +336,7 @@ public class HtmlParser {
                 htmlDoc = reader.read(document);                
             } catch (java.lang.StackOverflowError e) {
                 logger.warn("Out of stack memory trying to parse "+url);
-                throw e;
+                throw new Exception(e);
             }
             // this 2 must be before the ignoreXPath, else an ignoreXPath that
             // includes the //TITLE will imply that the title is not indexed
