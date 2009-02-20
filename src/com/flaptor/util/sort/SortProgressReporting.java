@@ -21,6 +21,7 @@ package com.flaptor.util.sort;
  * @author jorge
  */
 public interface SortProgressReporting {
+    public static int REPORTING_PERIOD = 1000;
     public void startSort();
     public void startMerge();
     public void reportSorted(long recs);

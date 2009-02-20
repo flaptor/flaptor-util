@@ -180,7 +180,7 @@ public final class MergeSort {
             // Report progress
             if (null != progress) {
                 count++;
-                if (count >= 10) {
+                if (count >= SortProgressReporting.REPORTING_PERIOD) {
                     progress.reportMerged(count);
                     count = 0;
                 }
