@@ -121,7 +121,7 @@ public class RmiCodeGeneration {
                         generatedInterf.addMethod(newMethod);
                     }
                 }
-                handlerInterface = generatedInterf.toClass();
+                handlerInterface = generatedInterf.toClass(ClassLoader.getSystemClassLoader());
                 classMap.put(remoteClassName, handlerInterface);
             }
             return handlerInterface;
