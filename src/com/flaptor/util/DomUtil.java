@@ -125,7 +125,7 @@ public final class DomUtil {
      */
     public static final String filterXml(final String text) {
         if (text == null) {
-            return null;
+            return "";
         }
         StringBuffer buffer = null;
         for (int i = 0; i < text.length(); i++) {

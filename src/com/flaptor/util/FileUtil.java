@@ -438,7 +438,7 @@ public final class FileUtil {
         FileInputStream is = null; 
         try {
             is = new FileInputStream(f);
-            //XXX TODO: see comment about serializtion in createChecksum
+            //XXX TODO: see comment about serialization in createChecksum
             is.read(checksum2);
             return java.util.Arrays.equals(checksum1, checksum2);
         }
@@ -453,7 +453,7 @@ public final class FileUtil {
      * @param suffix  a string to use at the end of the directory's name.
      * @return a newly created (empty) directory on the system's tmp directory.
      */
-    public static File createTempDir (final String prefix, final String suffix) {
+    public static File createTempDir (final String prefix, final String suffix) throws IOException {
         File retVal = null;
         java.util.Random random = new java.util.Random(System.currentTimeMillis());
         int retry = 0;
@@ -461,7 +461,11 @@ public final class FileUtil {
             retVal = new File(System.getProperty("java.io.tmpdir") + File.separator + prefix + random.nextInt() + suffix);
             if (!retVal.mkdir()) {
                 retVal = null;
+                retry++;
             }
+        }
+        if  (null == retVal) {
+            throw new IOException("Can't create a temporary directory in "+System.getProperty("java.io.tmpdir"));
         }
         retVal.deleteOnExit();
         return retVal;

@@ -113,7 +113,7 @@ public class HtmlParser {
         for (int i = 0; i < processors; i++) {
             DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
             try {
-                parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", true);
+                parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", false);
                 parser.setProperty("http://cyberneko.org/html/properties/default-encoding","UTF-8");
             } catch (Exception e) { 
                 logger.error("Setting nekohtml parser encoding options", e);
