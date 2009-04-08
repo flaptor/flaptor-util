@@ -1,6 +1,7 @@
 package com.flaptor.util;
 
 import java.lang.reflect.Array;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,20 @@ public class Pairs {
     }
 
     /**
+     * Creates a new sorted pair for the given values
+     */
+    public static <T extends Comparable<T>> Pair<T, T> newSortedPair(T t1, T t2) {
+        return sort(newPair(t1, t2));
+    }
+   
+    /**
+     * Creates a new sorted pair for the given values
+     */
+    public static <T> Pair<T, T> newSortedPair(T t1, T t2, Comparator<T> comparator) {
+        return sort(newPair(t1, t2), comparator);
+    }
+    
+    /**
      * Returns the empty pair.
      * Unlike the like-named field, this method is parameterized.
      * (Unlike this method, the field does not provide type safety.)
@@ -46,6 +61,18 @@ public class Pairs {
             return pair;
         }
     }
+
+    /**
+     * Creates a new pair with elements in the given pair sorted in such a way that `first` <= `last`
+     */
+    public static <T> Pair<T, T> sort(Pair<T, T> pair, Comparator<T> comparator) {
+        if (comparator.compare(pair.first(), pair.last()) > 0) {
+            return swap(pair);
+        } else {
+            return pair;
+        }
+    }
+
 
     /**
      * Creates a new pair with the elements of the given pair swapped
