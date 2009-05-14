@@ -25,6 +25,12 @@ public class DateUtil {
         c.setTime(date);
         return c;
     }
+
+    public static Calendar toGMTCalendar(Date date) {
+        Calendar c = getGMTCalendar();
+        c.setTime(date);
+        return c;
+    }
     
     public static Date toDate(Calendar calendar) {
         return calendar.getTime();
@@ -68,6 +74,7 @@ public class DateUtil {
     public static Calendar getCanonicalDay(Calendar cal) {
         Calendar ret = new GregorianCalendar(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 0 ,0 ,0);
         ret.set(Calendar.MILLISECOND, 0);
+        ret.setTimeZone(cal.getTimeZone());
         return ret;
     }
     
@@ -143,25 +150,65 @@ public class DateUtil {
         return cal;
     }
     
-    public static Date getDeltaFromDate(Date source, int field, int delta) {
+    public static Date addSeconds(Date source, int seconds) {
+        return addField(source, Calendar.SECOND, seconds);
+    }
+    
+    public static Date addMinutes(Date source, int minutes) {
+        return addField(source, Calendar.MINUTE, minutes);
+    }
+    
+    public static Date addHours(Date source, int hours) {
+        return addField(source, Calendar.HOUR_OF_DAY, hours);
+    }
+
+    public static Date addDays(Date source, int days) {
+        return addField(source, Calendar.DAY_OF_YEAR, days);
+    }
+    
+    public static Date addMonths(Date source, int months) {
+        return addField(source, Calendar.MONTH, months);
+    }
+    
+    public static Date addYears(Date source, int years) {
+        return addField(source, Calendar.YEAR, years);
+    }
+    
+    public static Date addField(Date source, int field, int delta) {
         Calendar c = Calendar.getInstance();
         c.setTime(source);
         c.add(field, delta);
         return c.getTime();
     }
 
-    public static Date getMinDate(Iterable<Date> dates) {
+    public static Date min(Iterable<Date> dates) {
         Date min = null;
         for (Date date : dates) {
-            if (min == null || min.after(date))
+            if (date != null && (min == null || min.after(date)))
                 min = date;
         }
         return min;
     }
-    public static Date getMaxDate(Iterable<Date> dates) {
+    public static Date max(Iterable<Date> dates) {
         Date max = null;
         for (Date date : dates) {
-            if (max == null || max.before(date))
+            if (date != null && (max == null || max.before(date)))
+                max = date;
+        }
+        return max;
+    }
+    public static Date min(Date... dates) {
+        Date min = null;
+        for (Date date : dates) {
+            if (date != null && (min == null || min.after(date)))
+                min = date;
+        }
+        return min;
+    }
+    public static Date max(Date... dates) {
+        Date max = null;
+        for (Date date : dates) {
+            if (date != null && (max == null || max.before(date)))
                 max = date;
         }
         return max;
@@ -187,9 +234,23 @@ public class DateUtil {
     
     public static SimpleDateFormat getGMTDateFormat(String strFormat) {
         SimpleDateFormat format = new SimpleDateFormat(strFormat);
-        Calendar gmt = Calendar.getInstance(new SimpleTimeZone(0, "GMT"));
-        format.setCalendar(gmt);
+        format.setCalendar(getGMTCalendar());
         return format;
     }
 
+    public static Calendar getGMTCalendar() {
+        return Calendar.getInstance(new SimpleTimeZone(0, "GMT"));
+    }
+    
+    public static Calendar truncateHour(Calendar c) {
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c;
+    }
+
+    public static Date truncateHour(Date d) {
+        return toDate(truncateHour(toCalendar(d)));
+    }
+    
 }

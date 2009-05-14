@@ -5,12 +5,29 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 
 public class Pairs {
 
+    public static <T> Function<Pair<T, ?>, T> getFirstFunction() {
+        return new Function<Pair<T, ?>, T>() {
+            public T apply(Pair<T, ?> from) {
+                return from.first();
+            }
+        };
+    }
+    
+    public static <T> Function<Pair<?, T>, T> getLastFunction() {
+        return new Function<Pair<?, T>, T>() {
+            public T apply(Pair<?, T> from) {
+                return from.last();
+            }
+        };
+    }
+    
     /**
      * The empty pair (immutable).
      * @see #emptyPair()
