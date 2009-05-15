@@ -13,17 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and 
 limitations under the License.
 */
-package com.flaptor.util;
+package com.flaptor.util.parser;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -43,15 +40,16 @@ import com.flaptor.util.Pair;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ArrayBlockingQueue;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 
 /**
  * This class implements a parser for html documents.
  * @author Flaptor Development Team
  */
-public class HtmlParser {
+public class HtmlParser implements IParser {
 
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
-    private static final String HTMLPARSER_CONTENT = "HTML_PARSER_CONTENT_FIELD";
     private BlockingQueue<DOMParser> parsers;
     private String xpathIgnore=null;
     // map field - xpath
@@ -131,181 +129,6 @@ public class HtmlParser {
         if (null == fieldDefinitions) this.fieldDefinitions = new HashMap<String,String>();
     }
 
-    /**
-     * Replace all whitespace with one space character and trim.
-     * This runs more than 4 times faster than 
-     * <code>str.replaceAll("\\s+"," ").trim()</code>
-     */
-    private String collapseWhiteSpace(String str) {
-        StringBuffer buf = new StringBuffer();
-        boolean inspace = false;
-        for (int n=0; n<str.length(); n++) {
-            char ch = str.charAt(n);
-            if (ch==' ' || ch=='\t' || ch=='\n' || ch=='\f' || ch=='\r' || ch==10 || ch==160) {  // 160 is &nbsp; in utf
-                if (!inspace) {
-                    buf.append(' ');
-                    inspace = true;
-                }
-            } else {
-                buf.append(ch);
-                inspace = false;
-            }
-        }
-        return buf.toString().trim();
-    }
-
-
-    // This method tries to create an URI from a possibly malformed url.
-    private static URI getURI(String url) throws URISyntaxException {
-    	URI uri = null;
-    	url = url.trim();
-    	if (url.startsWith("file:") || url.startsWith("javascript:")) {
-    		logger.debug("Can't handle url: "+url);
-    	} else {
-    		int p = url.indexOf('?');
-    		if (p < 0) {
-    			try {
-    				uri = new URI(url.replace(" ", "%20"));
-    			} catch (java.net.URISyntaxException e) {
-    				logger.debug("Malformed URI: "+url);
-    			}
-    		} else {
-    			String base, query;
-    			int q = url.lastIndexOf('#');
-    			if (q < 0) q = url.length();
-    			if (p < q) { 
-    				base = url.substring(0,p+1);
-    				query = url.substring(p+1,q);
-    			} else {
-    				base = url.substring(0,q)+"?";
-    				query = url.substring(p+1);
-    			}            
-    			// Encode any space in the url. Can't use a url encoder because it would encode stuff like '/' and ':'.
-    			base = base.replace(" ", "%20");
-    			try {
-    				// Re-encode the query part, to handle partially encoded urls.
-    				query = java.net.URLEncoder.encode(java.net.URLDecoder.decode(query,"UTF-8"),"UTF-8");
-    				query = query.replace("%3D","=").replace("%26","&");
-    			} catch (java.io.UnsupportedEncodingException e) {
-    				logger.debug("encoding a url", e);
-    			}
-    			url = base + query;
-    			uri = new URI(url);
-    		}
-    	}
-        return uri;
-    }
-
-
-    /**
-     * The result of the parser is stored in an object of this class.
-     * It contains the extracted text, the title and the outlinks.
-     */
-    public class Output {
-        //private StringBuffer buffer;
-        private String text;
-        private List<Pair<String,String>> links;
-        private String title = "";
-        private String url = null;
-        private URI baseUri = null;
-        // map field - content
-        private Map<String,StringBuffer> fields;
-
-        public Output(String url) throws URISyntaxException {
-            this.url = url;
-            if (url.length() > 0) {
-                baseUri = getURI(url);
-            }
-            links = new ArrayList<Pair<String,String>>();
-            fields = new HashMap<String,StringBuffer>();
-            fields.put(HTMLPARSER_CONTENT,new StringBuffer());
-        }
-
-        public void addFieldString(String field, String str) {
-            // check that the str is valid.
-            if (null == str || "".equals(str)) { 
-                logger.debug("field " + field + " is empty");
-                return;
-            }
-
-            // So, find field.
-            StringBuffer buffer = fields.get(field);
-            if (null == buffer) {
-                buffer = new StringBuffer();
-                fields.put(field,buffer);
-            } 
-            str = collapseWhiteSpace(str);
-            if (str.length() > 0) {
-                if (buffer.length() > 0) buffer.append(' ');
-                buffer.append(str.trim());
-            }
-        }
-
-        public void addString(String str) {
-            addFieldString(HTMLPARSER_CONTENT,str);
-        }
-
-
-        public void addLink(String url, String anchor) throws URISyntaxException {
-            URI target = getURI(url);
-            if (null != target) {
-            	if (null != baseUri) {
-            		if (baseUri.getPath() == null || baseUri.getPath().length() == 0) {
-            			baseUri = baseUri.resolve(URI.create("/"));
-            		}
-            		target = baseUri.resolve(target);
-            	}
-            	links.add(new Pair<String,String>(target.toString(),anchor.trim()));
-            }
-        }
-
-        public void setTitle(String title) {
-            this.title = title.trim();
-        }
-        
-        public void setBaseUrl(String baseUrl) throws URISyntaxException {
-            baseUri = getURI(baseUrl);
-        }
-
-        protected void close(){
-            text = fields.get(HTMLPARSER_CONTENT).toString();
-            text = text.replaceAll("(\\.\\s)+", ". ");
-            text = text.replaceAll("\\s\\.", ". ");           
-        }
-        
-        public String getText() {
-            return text;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-        
-        public List<Pair<String,String>> getLinks() {
-            return links;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-       
-        /**
-         * Gets the content of the given fieldname.
-         * 
-         * @param fieldName
-         * @return The String content of fieldName if present,
-         *         null otherwise.
-         */
-        public String getField(String fieldName) {
-            StringBuffer sb = fields.get(fieldName);
-            if (null != sb) { 
-                return sb.toString();
-            } else {
-                return null;
-            }
-        }
-        
-    }
 
 
     /**
@@ -313,16 +136,16 @@ public class HtmlParser {
      * @param content the html document to parse.
      * @return the parsed string.
      */
-    public Output parse(String url, String content) throws Exception {
+    public ParseOutput parse(String url, byte[] bytes, String encoding) throws Exception {
         // <html xmlns=...>  ==>   <html>
-        content= REGEXP_HTML.matcher(content).replaceFirst("<html>");
+        String content = REGEXP_HTML.matcher(new String(bytes,encoding)).replaceFirst("<html>");
         // Parser keeps state, synchronize in case its used in a multi-threaded setting.
-        Output out = new Output(url);
+        ParseOutput out = new ParseOutput(url);
         DOMParser parser = parsers.take();
         try {
             try {
                 // use cyberneko to parse the html documents (even broken ones)
-                org.xml.sax.InputSource inputSource = new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(content.getBytes("UTF-8")));
+                org.xml.sax.InputSource inputSource = new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(bytes));
                 parser.parse(inputSource);
             } catch (Exception e) {
                 logger.warn("Exception while trying to parse "+url);
@@ -338,6 +161,12 @@ public class HtmlParser {
                 logger.warn("Out of stack memory trying to parse "+url);
                 throw new Exception(e);
             }
+            
+            // eliminate any namespace, it breaks xpath
+            removeNamespace((Element) htmlDoc.selectSingleNode("HTML|Html|html"));
+
+            ignoreXpath(htmlDoc);
+
             // this 2 must be before the ignoreXPath, else an ignoreXPath that
             // includes the //TITLE will imply that the title is not indexed
             // extract the links
@@ -346,13 +175,10 @@ public class HtmlParser {
             // extact the title
             extractTitle(htmlDoc, out);
     
-            ignoreXpath(htmlDoc);
-
             replaceSeparatorTags(htmlDoc);
             
             // extract the text from the html tags
-            extractText(htmlDoc.getRootElement(), out,HTMLPARSER_CONTENT);
-
+            extractText(htmlDoc.getRootElement(), out, ParseOutput.CONTENT);
 
             // extract special fields
             extractFields(htmlDoc,out);
@@ -363,17 +189,38 @@ public class HtmlParser {
         return out;
     }
 
+    // Removes the namespace from the given element and its children.
+    private void removeNamespace(Element elem) {
+        if (null != elem) {
+            elem.remove(elem.getNamespace());
+            elem.setQName(QName.get(elem.getName(),Namespace.NO_NAMESPACE));
+            removeNamespace(elem.content());
+        }
+    }
+    
+    // Removes the namespace from the given elements and their children.
+    @SuppressWarnings("unchecked")
+    private void removeNamespace(List list) {
+        if (null != list) {
+            for (Node node : (List<Node>)list) {
+                if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                    ((Attribute)node).setNamespace(Namespace.NO_NAMESPACE);
+                } else if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    removeNamespace((Element)node);
+                }
+            }
+        }
+    }
 
-
-    private void extractTitle(Document htmlDoc, Output out){
-        Node titleNode = htmlDoc.selectSingleNode("//TITLE|//title|//Title");
+    private void extractTitle(Document htmlDoc, ParseOutput out){
+        Node titleNode = htmlDoc.selectSingleNode("//TITLE|//Title|//title");
         if (null != titleNode) {
             out.setTitle(titleNode.getText());
         }
     }
     
     @SuppressWarnings("unchecked")
-    private void extractLinks(Document htmlDoc, Output out) {
+    private void extractLinks(Document htmlDoc, ParseOutput out) {
         try {
             Node baseNode = htmlDoc.selectSingleNode("//BASE|//Base|//base");
             if (null != baseNode) {
@@ -409,7 +256,7 @@ public class HtmlParser {
         }
     }
 
-    private void extractFields(Document htmlDoc, Output out) {
+    private void extractFields(Document htmlDoc, ParseOutput out) {
         for (String field: fieldDefinitions.keySet()) {
             String xpath = fieldDefinitions.get(field);
             List elements = htmlDoc.selectNodes(xpath);
@@ -462,7 +309,7 @@ public class HtmlParser {
         if (null == xpathIgnore){ 
             return;
         }
-        List<Node> nodes = (List<Node>) htmlDoc.selectNodes(xpathIgnore.toString());
+        List<Node> nodes = (List<Node>) htmlDoc.selectNodes(xpathIgnore);
         for (Node node: nodes){
             try {
                 node.detach();
@@ -482,7 +329,7 @@ public class HtmlParser {
      *            should be empty. After return, it contains the readable text
      *            of the html and the outlinks.
      */
-    protected void extractText(final Element e, final Output out, final String fieldName) {
+    protected void extractText(final Element e, final ParseOutput out, final String fieldName) {
         //String nodeName = e.getName();
         if (!(e.getNodeType() == Node.COMMENT_NODE)) {
             int size = e.nodeCount();
@@ -499,7 +346,7 @@ public class HtmlParser {
     }
 
     public void test(String base, String link) throws Exception {
-        Output out = new Output(base);
+        ParseOutput out = new ParseOutput(base);
         out.addLink(link,"");
         for (Pair<String,String> lnk : out.getLinks()) {
             System.out.println(lnk.first());
@@ -512,7 +359,7 @@ public class HtmlParser {
         String str = FileUtil.readFile(new File(arg[0]));
         String url = "http://url.com";
         if (arg.length > 1) { url = arg[1]; }
-        Output out = parser.parse(url, str);
+        ParseOutput out = parser.parse(url, str.getBytes("UTF-8"), "UTF-8");
         System.out.println("-------------------------------------------");
         System.out.println("TITLE: "+out.getTitle());
         for (Pair<String,String> link : out.getLinks()) {

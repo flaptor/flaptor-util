@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.flaptor.util;
 
+import com.flaptor.util.parser.HtmlParser;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -23,6 +24,7 @@ import com.flaptor.util.Execute;
 import com.flaptor.util.Pair;
 import com.flaptor.util.TestCase;
 import com.flaptor.util.TestInfo;
+import com.flaptor.util.parser.ParseOutput;
 
 /**
  * @author Flaptor Development Team
@@ -31,11 +33,11 @@ public class HtmlParserTest extends TestCase {
     @SuppressWarnings("unused")
     private static final Logger logger = Logger.getLogger(Execute.whoAmI());
 
-    private HtmlParser.Output parse(String url, String text, String ignore) throws Exception {
+    private ParseOutput parse(String url, String text, String ignore) throws Exception {
         String ign= (null == ignore)? "": ignore;
         String ur= (null == url)? "http://domain.com/dir/test.html": url;
         HtmlParser parser = new HtmlParser(ign, new String[0]);
-        HtmlParser.Output out = parser.parse(ur, text);
+        ParseOutput out = parser.parse(ur, text.getBytes("UTF-8"),"UTF-8");
         return out;
     }
 
@@ -46,7 +48,7 @@ public class HtmlParserTest extends TestCase {
                         " <html xmlns=\"http://www.w3.org/1999/xhtml\" >"+
                         "<sometag attr=\"no\"> one </sometag> " +
                         "<anothertag> two </anothertag> </html>";
-        HtmlParser.Output out = parse(null, text, null);
+        ParseOutput out = parse(null, text, null);
         assertTrue("HtmlParser didn't produce expected output", "one two".equals(out.getText()));
     }
     
@@ -56,7 +58,7 @@ public class HtmlParserTest extends TestCase {
         "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"+
         " <html xmlns=\"http://www.w3.org/1999/xhtml\" >"+
         "<head> <title> the title </title> </head> </html>";
-        HtmlParser.Output out = parse(null, text, null);
+        ParseOutput out = parse(null, text, null);
         assertTrue("HtmlParser didn't extract the title", "the title".equals(out.getTitle()));
     }
 
@@ -66,7 +68,7 @@ public class HtmlParserTest extends TestCase {
         "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"+
         " <html xmlns=\"http://www.w3.org/1999/xhtml\" >"+
         "<dontignore> right </dontignore> <ignorethis> wrong </ignorethis> </html>";
-        HtmlParser.Output out = parse(null, text, "//IGNORETHIS");
+        ParseOutput out = parse(null, text, "//IGNORETHIS");
         assertTrue("HtmlParser didn't produce expected output", "right".equals(out.getText()));
     }
 
@@ -75,14 +77,14 @@ public class HtmlParserTest extends TestCase {
     @TestInfo(testType = TestInfo.TestType.UNIT)
     public void testTextExtraction() throws Exception {
         String text = "<html> <sometag attr=\"no\"> one </sometag> <anothertag> two </anothertag> </html>";
-        HtmlParser.Output out = parse("", text, null);
+        ParseOutput out = parse("", text, null);
         assertTrue("HtmlParser didn't produce expected output", "one two".equals(out.getText()));
     }
 
     @TestInfo(testType = TestInfo.TestType.UNIT)
     public void testTitle() throws Exception {
         String text = "<html> <head> <title> the title </title> </head> </html>";
-        HtmlParser.Output out = parse("", text, null);
+        ParseOutput out = parse("", text, null);
         assertTrue("HtmlParser didn't extract the title", "the title".equals(out.getTitle()));
     }
 
@@ -97,7 +99,7 @@ public class HtmlParserTest extends TestCase {
             " <a href=\"/dir/six.html\"> six </a> "+
             " <a href=\"seven.html\"> seven </a> "+
             " </body> </html>";
-        HtmlParser.Output out = parse("http://domain.com/dir/test.html", text, null);
+        ParseOutput out = parse("http://domain.com/dir/test.html", text, null);
         List<Pair<String,String>> links = out.getLinks();
         assertEquals("Didn't extract the right number or links", 7, links.size());
 
@@ -132,7 +134,7 @@ public class HtmlParserTest extends TestCase {
     @TestInfo(testType = TestInfo.TestType.UNIT)
     public void testIgnoreTags() throws Exception {
         String text = "<html> <dontignore> right </dontignore> <ignorethis> wrong </ignorethis> </html>";
-        HtmlParser.Output out = parse("", text, "//IGNORETHIS");
+        ParseOutput out = parse("", text, "//IGNORETHIS");
         assertTrue("HtmlParser didn't produce expected output", "right".equals(out.getText()));
     }
 

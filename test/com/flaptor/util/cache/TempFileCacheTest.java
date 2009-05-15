@@ -39,11 +39,12 @@ import com.flaptor.util.remote.RpcException;
 public class TempFileCacheTest extends TestCase {
 
 
-    private String cacheDir = FileUtil.createTempDir("testcacheTemp", ".tmp").getAbsolutePath();
+    private String cacheDir;
     private FileCache<String> cache;
     private int MAX_KEY_COUNT = 100;
 
-    public void setUp() {
+    public void setUp() throws Exception {
+        cacheDir = FileUtil.createTempDir("testcacheTemp", ".tmp").getAbsolutePath();
         String log4jConfigPath = com.flaptor.util.FileUtil.getFilePathFromClasspath("log4j.properties");
         if (null != log4jConfigPath) {
             PropertyConfigurator.configureAndWatch(log4jConfigPath);

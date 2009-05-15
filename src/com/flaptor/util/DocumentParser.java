@@ -16,6 +16,7 @@ limitations under the License.
 
 package com.flaptor.util;
 
+import java.nio.charset.Charset;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -59,11 +60,14 @@ public class DocumentParser {
             logger.error("genDocument: received null as input.");
             throw new IllegalArgumentException();
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Will parse: "+s);
+        }
         Document doc;
         SAXReader reader = null;
         try {
             reader = readers.take();
-            doc = reader.read(new org.xml.sax.InputSource(new java.io.ByteArrayInputStream(s.getBytes())));
+            doc = reader.read(new org.xml.sax.InputSource(new java.io.StringReader(s)));
         } catch (DocumentException e) {
             logger.debug("genDocument: cannot convert text to document.", e);
             return null;

@@ -53,7 +53,7 @@ public class MultiCacheTest extends TestCase{
     //This is an integration test because it uses rmi. It could use a fake rpc...
     @TestInfo(testType = TestInfo.TestType.INTEGRATION,
             requiresPort = {30000, 30001, 30002, 30003, 30004})
-    public void testFind() throws UnsupportedEncodingException {
+    public void testFind() throws Exception {
         caches = new ArrayList<FileCache<String>>();
         List<RmiServer> servers = new ArrayList<RmiServer>();
         List<Pair<String, Integer>> hosts = new ArrayList<Pair<String,Integer>>();

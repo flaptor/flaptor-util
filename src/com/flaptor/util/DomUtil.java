@@ -163,6 +163,7 @@ public final class DomUtil {
     }
 
     private static final boolean isLegalXml(final char c) {
+        if (c >= 0x92 && c <= 0x97) return false;
         return c == 0x9 || c == 0xa || c == 0xd || (c >= 0x20 && c <= 0xd7ff)
             || (c >= 0xe000 && c <= 0xfffd) || (c >= 0x10000 && c <= 0x10ffff);
     }
