@@ -108,7 +108,7 @@ public class ParseOutput {
         baseUri = getURI(baseUrl);
     }
 
-    protected void close(){
+    public void close(){
         text = fields.get(CONTENT).toString();
         text = text.replaceAll("(\\.\\s)+", ". ");
         text = text.replaceAll("\\s\\.", ". ");           

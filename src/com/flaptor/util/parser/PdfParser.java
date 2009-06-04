@@ -36,11 +36,12 @@ public class PdfParser implements IParser {
             output.addFieldString(ParseOutput.CONTENT, text);
             output.setTitle(title);
 //System.out.println("ENCODING: "+encoding);
-System.out.println("TITLE: "+title);
-System.out.println("TEXT: "+text);
-System.out.println("LEN: "+text.length());
+//System.out.println("TITLE: "+title);
+//System.out.println("TEXT: "+text);
+//System.out.println("LEN: "+text.length());
         } finally {
             Execute.close(pdf);
+            Execute.close(output);
         }
         return output;
     }
