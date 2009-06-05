@@ -115,21 +115,35 @@ public class TrieTree<Type> {
         if (null == key || key.length() == 0) {  // empty or null keys are not stored
             return null;
         }
+        TrieTree<Type> node = getNode(key);
+        if (null == node) { return null; }
+        return node.value;
+    }
+
+    /**
+     * Returns the object stored at the provided key.
+     * @param key the key to search for.
+     * @return the stored object associated with the key if found, null otherwise.
+     */
+    public TrieTree<Type> getNode (String key) {
+        if (null == key || key.length() == 0) {  // empty or null keys are not stored
+            return null;
+        }
         if (keyCh == key.charAt(0)) {  // if this node has the key char
             if (key.length() == 1) {  // and if the key is complete
-                return value;  // we found the key, return the stored value
+                return this;  // we found the key, return the stored value
             } else {
                 if (null == child) {
                     return null;  // the key is not over, yet the tree is
                 } else {
-                    return child.get(key.substring(1));  // recursively search down the tree
+                    return child.getNode(key.substring(1));  // recursively search down the tree
                 }
             }
         } else {
             if (null == next) {
                 return null;  // the node does not have the key char, and there are no more siblings
             } else {
-                return next.get(key);  // recursively search across the tree
+                return next.getNode(key);  // recursively search across the tree
             }
         }
     }
@@ -137,7 +151,8 @@ public class TrieTree<Type> {
     /**
      * Returns a list of objects stored at the provided key or any inicial part of the key.
      * @param key the key to search for.
-     * @return the stored object associated with the key if found, null otherwise.
+     * @return a vector of partial matches, containing the objects associated with the key if found
+     * and the length of the key portion that was matched.
      */
     public Vector<PartialMatch<Type>> getPartialMatches (String key) {
         Vector<PartialMatch<Type>> res = new Vector<PartialMatch<Type>>();
@@ -168,6 +183,39 @@ public class TrieTree<Type> {
         return res;
     }
 
+    /**
+     * Returns a list of objects stored at the nodes starting at the provided prefix.
+     * @param prefix the prefix to search for.
+     * @return a vector of the stored objects that start at the provided prefix.
+     */
+    public Vector<Type> getPrefixMatches(String prefix) {
+        Vector<Type> res = new Vector<Type>();
+        if (null != prefix && prefix.length() > 0) {  // empty or null prefixes are not considered
+            TrieTree<Type> node = getNode(prefix);
+            if (null != node) {
+                if (null != node.value) {
+                    res.add(node.value);
+                }
+                if (null != node.child) {
+                    node.child.collectValues(res);
+                }
+            }
+        }
+        return res;
+    }
+
+    private void collectValues(Vector<Type> bag) {
+        if (null != value) {
+            bag.add(value);
+        }
+        if (null != next) {
+            next.collectValues(bag);
+        }
+        if (null != child) {
+            child.collectValues(bag);
+        }
+    }
+    
     /**
      * Searches the tree for the provided key.
      * @param key the key to search for.
