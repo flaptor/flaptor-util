@@ -96,7 +96,7 @@ public class IOUtil {
         while(true) {
             int bytesRead = stream.read(buffer);
             if (bytesRead == -1) break;
-            o.write(buffer);
+            o.write(buffer, 0, bytesRead);
         }
         return o.toByteArray();
     }
