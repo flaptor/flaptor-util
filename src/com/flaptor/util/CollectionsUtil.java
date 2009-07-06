@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.AbstractIterable;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.Iterables;
@@ -255,6 +256,30 @@ public class CollectionsUtil {
         
     }
     
+    public static <T> Iterator<T> limit(final Iterator<T> iterator, final int limit) {
+        return new Iterator<T>() {
+            private int left = limit;
+            public boolean hasNext() {
+                return iterator.hasNext() && left > 0;
+            }
+            public T next() {
+                left--;
+                return iterator.next();
+            }
+            public void remove() {
+                iterator.remove();
+            }
+        };
+    }
+    
+    public static <T> Iterable<T> limit(final Iterable<T> iterable, final int limit) {
+        return new AbstractIterable<T>() {
+            public Iterator<T> iterator() {
+                return limit(iterable.iterator(), limit);
+            }
+        };
+    }
+    
     /**
      * Creates a list of sorted entries by copying them from the entrySet of a map. 
      * 
@@ -320,6 +345,8 @@ public class CollectionsUtil {
         
     }
 
+    
+    
     public static Function<String, Integer> PARSE_INT_FUNCTION = new Function<String, Integer>() {
         public Integer apply(String from) {
             return Integer.valueOf(from);
