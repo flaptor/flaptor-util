@@ -106,7 +106,7 @@ public class HtmlParser implements IParser {
      */
     public HtmlParser(String ignoreXPath, String[] separatorTags, Map<String,String> fieldDefinitions) {
         int processors = Runtime.getRuntime().availableProcessors();
-        logger.info("constructor: found " + processors + " processors. Creating the same number of parsers.");
+        logger.debug("constructor: found " + processors + " processors. Creating the same number of parsers.");
         parsers = new ArrayBlockingQueue<DOMParser>(processors);
         for (int i = 0; i < processors; i++) {
             DOMParser parser = new org.cyberneko.html.parsers.DOMParser();

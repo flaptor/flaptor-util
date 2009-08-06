@@ -89,7 +89,7 @@ public class RmiCacheStub<T extends Serializable> extends AClientStub implements
     }
     
     public Object doRemote(RemoteAction remoteAction) throws RpcException {
-        if (policy.reconnect()) {
+        if (policy.shouldReconnect()) {
             connect();
         }
         if (policy.callServer()) {

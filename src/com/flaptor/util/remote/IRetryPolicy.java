@@ -51,5 +51,5 @@ public interface IRetryPolicy {
      * the first time it's called.
      * @return true if the ClientStub is to try to reconnect to the server.
      */
-    public boolean reconnect();
+    public boolean shouldReconnect();
 }

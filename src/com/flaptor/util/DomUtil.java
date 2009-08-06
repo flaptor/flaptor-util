@@ -41,6 +41,7 @@ public final class DomUtil {
      */
     public static String domToString(final Document doc) {
         OutputFormat of = OutputFormat.createPrettyPrint();
+        of.setEncoding("UTF-8");
         StringWriter sw = new StringWriter();
         XMLWriter writer = null;
         try {

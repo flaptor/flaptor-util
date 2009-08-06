@@ -121,11 +121,11 @@ public class TrieTree<Type> {
     }
 
     /**
-     * Returns the object stored at the provided key.
+     * Returns the node stored at the provided key.
      * @param key the key to search for.
-     * @return the stored object associated with the key if found, null otherwise.
+     * @return the stored node associated with the key if found, null otherwise.
      */
-    public TrieTree<Type> getNode (String key) {
+    private TrieTree<Type> getNode (String key) {
         if (null == key || key.length() == 0) {  // empty or null keys are not stored
             return null;
         }

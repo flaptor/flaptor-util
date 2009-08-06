@@ -69,8 +69,8 @@ public abstract class ARmiClientStub extends AClientStub {
      Reconnects to the searcher if necessary, and return wheather the rpc should be performed or not.
     **/
     public boolean checkConnection() throws RemoteException{
-        boolean reconnect = policy.reconnect() || !remoteInitialized;
-        if (reconnect) {
+        boolean needToReconnect = policy.shouldReconnect() || !remoteInitialized;
+        if (needToReconnect) {
             try {
                 connect();
                 return true;

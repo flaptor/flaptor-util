@@ -70,7 +70,7 @@ public class ExponentialFallbackPolicy implements IRetryPolicy {
     	connectionState = ConnectionState.CONNECTED;
     }
 
-    public synchronized boolean reconnect() {
+    public synchronized boolean shouldReconnect() {
         boolean retVal;
         ConnectionState startState = connectionState;
     	if (connectionState == ConnectionState.CONNECTED || connectionState == ConnectionState.RECONECTING) {

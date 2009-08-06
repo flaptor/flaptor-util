@@ -35,7 +35,7 @@ public class AlwaysRetryPolicy implements IRetryPolicy {
         lastSuccess = true;
     }
 
-    public boolean reconnect() {
+    public boolean shouldReconnect() {
         return !lastSuccess;
     }
 
