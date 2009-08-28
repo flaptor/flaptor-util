@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 import com.flaptor.util.Execute;
 import com.flaptor.util.FileUtil;
 import com.flaptor.util.TranscodeUtil;
+import java.lang.reflect.Method;
 
 
 /**
@@ -645,11 +646,17 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     private static void helpAndExit() {
         String usage = "\nCache <command> <args> [-dates <dd-mm-yyyy> <dd-mm-yyyy>]\n"
         	+"\nCommands:\n"
-        	+"  get <dir> [<url>]\n"
-        	+"  getobj <dir> [<url>]\n"
-        	+"  getobjprop <dir> <method> [<url>]\n"
         	+"  list <dir>\n"
-        	+"  translate <src-dir> <src-file-depth> <dest-dir> <dst-file-depth>\n";
+            +"      Lists the keys for the stored objects.\n"
+        	+"  get <dir> [<key>]\n"
+            +"      Shows the result of calling toString() on the stored objects.\n"
+            +"      If the <key> parameter is not given, the command is applied to all the stored objects.\n"
+        	+"  getprop <dir> [<method> [<key>]]\n"
+            +"      Shows the result of calling the given method on the stored objects.\n"
+            +"      If no method is given, it shows callable methods.\n"
+            +"      If the <key> is not given, it applies to all the stored items.\n"
+        	+"  translate <src-dir> <src-file-depth> <dest-dir> <dst-file-depth>\n"
+            +"      Copies the cache to a new location using a different file depth structure.\n";
         System.out.println(usage);
         System.exit(1);
     }
@@ -702,6 +709,35 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
 			}
 		}
     }
+    
+    private static Object getProperty(Object object, String property) {
+        if (object == null) return null;
+        try {
+            return object.getClass().getMethod(property, new Class[0]).invoke(object, new Object[0]);
+        } catch (SecurityException e) {
+            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
+        } catch (NoSuchMethodException e) {
+            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
+        } catch (IllegalAccessException e) {
+            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
+        } catch (InvocationTargetException e) {
+            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
+        }
+        return null;
+    }
+    
+    private static void showCallableMethods(Object obj) {
+       System.out.println("Stored object is of class "+obj.getClass()+" which implements the following callable methods");
+        for (Method mtd : obj.getClass().getMethods()) {
+            if (mtd.getParameterTypes().length == 0 && ! "void".equals(mtd.getReturnType().getName())) {
+                System.out.println("   "+mtd.getName()+" returns "+mtd.getReturnType().getName());
+            }
+        }
+    }
+
+
 
     public static void main (String[] args) {
         if (args.length < 2) {
@@ -710,7 +746,7 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
         Date[] range = new Date[2];
         String[] param = extractDateRange(args, range);
         int arglen = param.length;
-    	if ("get".equals(param[0])) {
+/*    	if ("getbytes".equals(param[0])) {
     		FileCache<byte[]> cache = new FileCache<byte[]>(param[1]);
     		switch (arglen) {
     		case 2:
@@ -728,7 +764,8 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     			break;
     		default: helpAndExit();
     		}
-    	} else if ("getobj".equals(param[0])) {
+    	} else*/
+        if ("get".equals(param[0]) || "getobj".equals(param[0])) {
     		FileCache<Object> cache = new FileCache<Object>(param[1]);
     		switch (arglen) {
     		case 2:
@@ -746,21 +783,47 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     			break;
     		default: helpAndExit();
     		}
-    	} else if ("getobjprop".equals(param[0])) {
+    	} else if ("getprop".equals(param[0])) {
     		FileCache<Object> cache = new FileCache<Object>(param[1]);
+            Iterator<String> it = null;
     		switch (arglen) {
-    		case 3:
-    			Iterator<String> it = cache.iterator();
-    			while (it.hasNext()) {
+            case 2:
+    			it = cache.iterator();
+    			if (it.hasNext()) {
     				String key = it.next();
-    				Object data = getProperty(cache.getItem(key), param[2]);
-    				showEntry(cache, param[2], data, range);
-    			}
-    			System.out.println("-------");
+    				Object obj = cache.getItem(key);
+                    showCallableMethods(obj);
+                } 
+                break;
+    		case 3:
+                String key = param[2];
+                Object obj = cache.getItem(key);
+                if (null != obj) {
+                    showCallableMethods(obj);
+                } else {
+                    it = cache.iterator();
+                    while (it.hasNext()) {
+                        key = it.next();
+                        obj = cache.getItem(key);
+                        String prop = param[2];
+                        Object data = getProperty(obj, prop);
+                        if (null == data) {
+                            System.out.println("Unable to obtain property "+prop+" from class "+obj.getClass());
+                        }
+                        showEntry(cache, key, data, range);
+                    }
+                    System.out.println("-------");
+                }
     			break;
     		case 4:
-    			Object data = getProperty(cache.getItem(param[3]), param[2]);
-    			showEntry(cache, param[3], data, range);
+                key = param[3];
+                obj = cache.getItem(key);
+                String prop = param[2];
+                Object data = getProperty(obj, prop);
+                if (null == data) {
+                    System.out.println("Unable to obtain property "+prop+" from class "+obj.getClass());
+                }
+    			showEntry(cache, key, data, range);
     			break;
     		default: helpAndExit();
     		}
@@ -812,22 +875,5 @@ public class FileCache<T> implements Iterable<String>, RmiCache<T>{
     	}
     }
 
-    private static Object getProperty(Object object, String property) {
-        if (object == null) return null;
-        try {
-            return object.getClass().getMethod(property, new Class[0]).invoke(object, new Object[0]);
-        } catch (SecurityException e) {
-            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
-        } catch (NoSuchMethodException e) {
-            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
-        } catch (IllegalArgumentException e) {
-            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
-        } catch (IllegalAccessException e) {
-            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
-        } catch (InvocationTargetException e) {
-            System.out.println("Unable to obtain property " + property + " from class "+ object.getClass());
-        }
-        return null;
-    }
 }
 
