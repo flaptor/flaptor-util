@@ -21,7 +21,7 @@ import org.pdfbox.util.PDFTextStripper;
 public class PdfParser implements IParser {
 
 
-    public ParseOutput parse(String url, byte[] content, String encoding) throws Exception {
+    public ParseOutput parse(String url, byte[] content) throws Exception {
         ParseOutput output = null;
         PDDocument pdf = null;
         try {
