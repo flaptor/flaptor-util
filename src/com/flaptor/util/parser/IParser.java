@@ -16,6 +16,6 @@ public interface IParser {
      * @param content the html document to parse.
      * @return the parsed string.
      */
-    public ParseOutput parse(String url, byte[] content, String encoding) throws Exception;
+    public ParseOutput parse(String url, byte[] content) throws Exception;
 
 }

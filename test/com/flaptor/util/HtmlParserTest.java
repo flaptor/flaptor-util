@@ -37,7 +37,7 @@ public class HtmlParserTest extends TestCase {
         String ign= (null == ignore)? "": ignore;
         String ur= (null == url)? "http://domain.com/dir/test.html": url;
         HtmlParser parser = new HtmlParser(ign, new String[0]);
-        ParseOutput out = parser.parse(ur, text.getBytes("UTF-8"),"UTF-8");
+        ParseOutput out = parser.parse(ur, text.getBytes("UTF-8"));
         return out;
     }
 
@@ -72,7 +72,14 @@ public class HtmlParserTest extends TestCase {
         assertTrue("HtmlParser didn't produce expected output", "right".equals(out.getText()));
     }
 
-
+    @TestInfo(testType = TestInfo.TestType.UNIT)
+    public void testAcceptNoHtmlTag() throws Exception {
+        String text = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "+
+        "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"+
+        "<dontignore> right </dontignore> <ignorethis> wrong </ignorethis>";
+        ParseOutput out = parse(null, text, "//IGNORETHIS");
+        assertTrue("HtmlParser didn't produce expected output", "right".equals(out.getText()));
+    }
 
     @TestInfo(testType = TestInfo.TestType.UNIT)
     public void testTextExtraction() throws Exception {

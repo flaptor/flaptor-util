@@ -133,14 +133,55 @@ public class HtmlParser implements IParser {
 
     /**
      * Parse the given html document.
+     * 
      * @param content the html document to parse.
      * @return the parsed string.
      */
-    public ParseOutput parse(String url, byte[] bytes, String encoding) throws Exception {
+    public ParseOutput parse(String url, byte[] bytes) throws Exception {
         // <html xmlns=...>  ==>   <html>
-        String content = REGEXP_HTML.matcher(new String(bytes,encoding)).replaceFirst("<html>");
+        
+        
         // Parser keeps state, synchronize in case its used in a multi-threaded setting.
         ParseOutput out = new ParseOutput(url);
+
+        Document htmlDoc = getHtmlDocument(url, bytes);
+
+        removeNamespace((Element) htmlDoc.selectSingleNode("HTML|Html|html"));
+        
+        ignoreXpath(htmlDoc);
+        
+        // this 2 must be before the ignoreXPath, else an ignoreXPath that
+        // includes the //TITLE will imply that the title is not indexed
+        // extract the links
+        extractLinks(htmlDoc, out);
+        
+        // extact the title
+        extractTitle(htmlDoc, out);
+        
+        replaceSeparatorTags(htmlDoc);
+        
+        // extract the text from the html tags
+        extractText(htmlDoc.getRootElement(), out, ParseOutput.CONTENT);
+        
+        // extract special fields
+        extractFields(htmlDoc,out);
+        
+        // eliminate any namespace, it breaks xpath
+        out.close();
+        return out;
+    }
+
+    /**
+     * Parses and fixes an html byte array using Cybernecko.
+     * 
+     * @param url The base URL for relative links
+     * @param bytes The content
+     * @return a dom4j Document 
+     * @throws InterruptedException
+     * @throws Exception
+     */
+    public Document getHtmlDocument(String url, byte[] bytes) throws InterruptedException, Exception {
+        Document htmlDoc;
         DOMParser parser = parsers.take();
         try {
             try {
@@ -152,7 +193,6 @@ public class HtmlParser implements IParser {
                 throw e;
             }
             DOMReader reader = new DOMReader();
-            Document htmlDoc;
             try {
                 // get the doc that resulted from parsing the text                
                 org.w3c.dom.Document document = parser.getDocument();                
@@ -162,31 +202,10 @@ public class HtmlParser implements IParser {
                 throw new Exception(e);
             }
             
-            // eliminate any namespace, it breaks xpath
-            removeNamespace((Element) htmlDoc.selectSingleNode("HTML|Html|html"));
-
-            ignoreXpath(htmlDoc);
-
-            // this 2 must be before the ignoreXPath, else an ignoreXPath that
-            // includes the //TITLE will imply that the title is not indexed
-            // extract the links
-            extractLinks(htmlDoc, out);
-
-            // extact the title
-            extractTitle(htmlDoc, out);
-    
-            replaceSeparatorTags(htmlDoc);
-            
-            // extract the text from the html tags
-            extractText(htmlDoc.getRootElement(), out, ParseOutput.CONTENT);
-
-            // extract special fields
-            extractFields(htmlDoc,out);
         } finally {
             parsers.add(parser);
         }
-        out.close();
-        return out;
+        return htmlDoc;
     }
 
     // Removes the namespace from the given element and its children.
@@ -359,7 +378,7 @@ public class HtmlParser implements IParser {
         String str = FileUtil.readFile(new File(arg[0]));
         String url = "http://url.com";
         if (arg.length > 1) { url = arg[1]; }
-        ParseOutput out = parser.parse(url, str.getBytes("UTF-8"), "UTF-8");
+        ParseOutput out = parser.parse(url, str.getBytes("UTF-8"));
         System.out.println("-------------------------------------------");
         System.out.println("TITLE: "+out.getTitle());
         for (Pair<String,String> link : out.getLinks()) {

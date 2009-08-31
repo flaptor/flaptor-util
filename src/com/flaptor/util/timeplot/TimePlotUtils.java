@@ -108,7 +108,7 @@ public class TimePlotUtils {
                 valuesRepresentation += decimalFormat.format(value);
             }
             
-            buffer.append(dateFormat.format(date) + valuesRepresentation + "\\n");            
+            buffer.append(dateFormat.format(date) + valuesRepresentation + rowSeparator);            
         }
         
         return buffer.toString();
