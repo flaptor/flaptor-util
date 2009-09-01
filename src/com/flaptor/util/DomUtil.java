@@ -16,6 +16,7 @@ limitations under the License.
 
 package com.flaptor.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Iterator;
@@ -23,8 +24,12 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.Text;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+
+import com.flaptor.util.parser.HtmlParser;
 
 /**
  * This class implements some static methods to manipulate doms.
@@ -94,6 +99,30 @@ public final class DomUtil {
             if (value != null) break;
         }
         return value;
+    }
+    
+    /**
+     * Gets the entire text of an element an all its children
+     * 
+     * @param element
+     * @return
+     */
+    public static String getElementTextRecursively(final Element element) {
+        String result = "";
+        
+        if (!(element.getNodeType() == Node.COMMENT_NODE)) {
+            int size = element.nodeCount();
+            for (int i = 0; i < size; i++) {
+                Node node = element.node(i);                
+                if (node instanceof Element) {
+                    result += getElementTextRecursively((Element) node);
+                } else if (node instanceof Text) {
+                    result +=  node.getText();
+                }
+            }
+        }
+        
+        return result;
     }
    
     
@@ -169,5 +198,13 @@ public final class DomUtil {
             || (c >= 0xe000 && c <= 0xfffd) || (c >= 0x10000 && c <= 0x10ffff);
     }
 
+    public static void main(String[] arg) throws Exception {
+        String str = FileUtil.readFile(new File(arg[0]));
+        HtmlParser parser = new HtmlParser();
+        Document htmlDocument = parser.getHtmlDocument("http://url.com", str.getBytes());
+        
+        System.out.println(getElementTextRecursively(htmlDocument.getRootElement()));
+    
+    }
 }
 
