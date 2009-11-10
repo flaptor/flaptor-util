@@ -147,7 +147,7 @@ public class ParseOutput {
     }
 
             // This method tries to create an URI from a possibly malformed url.
-    private static URI getURI(String url) throws URISyntaxException {
+    public static URI getURI(String url) throws URISyntaxException {
     	URI uri = null;
     	url = url.trim();
     	if (url.startsWith("file:") || url.startsWith("javascript:")) {
