@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 
 import com.google.common.base.Function;
@@ -34,6 +36,7 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Utility methods for Collections API
@@ -438,6 +441,19 @@ public class CollectionsUtil {
         return floats;
     }
 
-    
+    public static <T extends Comparable<T>> SortedSet<T> sortTopN(Iterable<T> iterable, int n) {
+    	return sortTopN(iterable, n, Comparators.<T>naturalOrder());
+    	
+    }
+    public static <T> SortedSet<T> sortTopN(Iterable<T> iterable, int n, Comparator<T> comparator) {
+    	TreeSet<T> r = Sets.newTreeSet(comparator);
+    	for (T t : iterable) {
+			r.add(t);
+			if (r.size() > n) {
+				r.pollLast();
+			}
+		}
+    	return r;
+    }
     
 }
