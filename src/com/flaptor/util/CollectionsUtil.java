@@ -88,6 +88,14 @@ public class CollectionsUtil {
             }
         };
     }
+    
+    public static <T> Comparator<T> inverseComparator(final Comparator<T> comp) {
+    	return new Comparator<T>() {
+    		public int compare(T o1, T o2) {
+    			return comp.compare(o2, o1);
+    		}
+    	};
+    }
 
     /**
      * Merges any number of sorted lists of comparable elements into a new sorted list in linear time O(N) where N is
