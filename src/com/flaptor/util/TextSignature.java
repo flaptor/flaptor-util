@@ -19,17 +19,26 @@ package com.flaptor.util;
 import com.flaptor.util.compression.CompressedIntSequence;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.util.LinkedList;
+import java.util.List;
 
 public class TextSignature implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final int HASH_SIZE = 256;
     protected CompressedIntSequence components = null;
 
     // Adds a word to the hash.
@@ -51,30 +60,71 @@ public class TextSignature implements Serializable {
      * @param text the text from which to compute the signature.
      */
     public TextSignature (String text) {
+        try { 
+            Reader reader = new StringReader(text);
+            build(reader);
+        } catch (IOException ioe) {
+            // this should NEVER happen, as the 
+            // String is already loaded into the heap.
+        }
+    } 
 
-        int[] data = new int[256];
+    
+    /**
+     * Creates a signature of the provided text.
+     * @param reader the reader from which to read the text to compute the signature.
+     */
+    public TextSignature (Reader reader) throws IOException {
+        build(reader);
+    }
 
-        String[] words = text.split("\\W+"); // should be changed by a customized implementation (for speed).
+    /**
+     * Creates a signature of the provided text.
+     * @param is the InputStream from which to read the text to compute the signature.
+     */
+    public TextSignature (InputStream is) throws IOException {
+        Reader reader = new BufferedReader(new InputStreamReader(is));
+        build(reader);
+    }
+
+
+    private void build(Reader reader) throws IOException {
+        int[] data = new int[HASH_SIZE];
+        
+        StreamTokenizer tokenizer = new StreamTokenizer(reader);
+        List<String> tokens = new LinkedList<String>();
+
         int windowSize = 4;
-        int head = 0;
         int tail = 1-windowSize;
         int hash = 0;
         boolean hashing = false;
 
-        while (head < words.length) {
-            hash = addWord(hash, words[head]);
+
+        while (tokenizer.nextToken() != StreamTokenizer.TT_EOF) {
+            if (null == tokenizer.sval){
+                // should we consider this?
+                continue;
+            }
+            tokens.add(tokenizer.sval);
+            hash = addWord(hash, tokenizer.sval);
             if (tail == 0) {
                 hashing = true;
             }
             if (hashing) {
-                data[hash%256]++;
-                hash = removeWord(hash, words[tail]);
+                data[hash%HASH_SIZE]++;
+                hash = removeWord(hash, tokens.remove(0));
             }
-            head++;
             tail++;
         }
-        
+
+        // text shorter than window? hash it anyway.
+        if (!hashing){
+            data[hash%HASH_SIZE]++;
+        }
+
+        //if (!hashing) System.err.println("TextSignature: still not hashing. Components will be empty.");
         components = new CompressedIntSequence(data);
+
     }
 
 
@@ -90,10 +140,15 @@ public class TextSignature implements Serializable {
         int intersection_size = 0;
         int[] data1 = components.getUncompressed();
         int[] data2 = other.components.getUncompressed();
-        for (int i=0; i<256; i++) {
+        for (int i=0; i<HASH_SIZE; i++) {
             union_size += Math.max(data1[i], data2[i]);
             intersection_size += Math.min(data1[i], data2[i]);
         }
+
+        // check if both were empty. union will be 0 in that case.
+        if (0 == union_size) return 0f;
+
+        // so, someone was not empty .. comparison means something.
         return (float)intersection_size / union_size;
     }
 
