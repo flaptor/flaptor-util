@@ -33,6 +33,7 @@ import org.dom4j.Text;
 import org.dom4j.dom.DOMDocumentFactory;
 import org.dom4j.io.DOMReader;
 import org.dom4j.tree.DefaultAttribute;
+import org.dom4j.tree.DefaultElement;
 
 import com.flaptor.util.Execute;
 import com.flaptor.util.FileUtil;
@@ -42,6 +43,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.dom4j.Namespace;
 import org.dom4j.QName;
+
 
 /**
  * This class implements a parser for html documents.
@@ -161,7 +163,7 @@ public class HtmlParser implements IParser {
         replaceSeparatorTags(htmlDoc);
         
         // extract the text from the html tags
-        extractText(htmlDoc.getRootElement(), out, ParseOutput.CONTENT);
+        extractAllText(htmlDoc.getRootElement(), out, ParseOutput.CONTENT);
         
         // extract special fields
         extractFields(htmlDoc,out);
@@ -275,22 +277,45 @@ public class HtmlParser implements IParser {
         }
     }
 
+    private void extractText(Object obj, ParseOutput out, String field) {
+        logger.debug("  item of class " + obj.getClass().getName());
+        if (obj instanceof DefaultAttribute) {
+            DefaultAttribute attr = (DefaultAttribute) obj;
+            out.addFieldString(field,attr.getValue());
+        } else if (obj instanceof Element || obj instanceof DefaultElement) {
+            Element el = (Element)obj;
+            extractAllText(el,out,field);
+        } else {
+            logger.debug("selected node of unknown type (" + obj.getClass().getName() + ")");
+        }
+    }
+
     private void extractFields(Document htmlDoc, ParseOutput out) {
+//System.out.println("XDOM: "+com.flaptor.util.DomUtil.domToString(htmlDoc));
         for (String field: fieldDefinitions.keySet()) {
             String xpath = fieldDefinitions.get(field);
             List elements = htmlDoc.selectNodes(xpath);
-            logger.debug("found " + elements.size() + " elements for " + xpath);
-            for ( Iterator iter = elements.iterator(); iter.hasNext();) {
-                Object next = iter.next();
-                if (next instanceof DefaultAttribute) {
-                    DefaultAttribute attr = (DefaultAttribute) next;
-                    out.addFieldString(field,attr.getValue());
-                } else if ( next instanceof Element) {
-                    Element el = (Element)next;
-                    extractText(el,out,field);
-                } else {
-                    logger.debug("xpath " + xpath + " selected some nodes of unknown type (" + next.getClass().getName() + " )");
-                } 
+            if (field.endsWith(".count")) {
+                out.addFieldString(field.substring(0,field.length()-6), String.valueOf(elements.size()));
+            } else if (field.matches(".*\\.[1-9][0-9]*$")) {
+                int p = field.lastIndexOf(".");
+                int n = 1, sel = Integer.parseInt(field.substring(p+1));
+                logger.debug("found " + elements.size() + " elements for " + xpath+", will select #"+sel);
+                Object obj = null;
+                for (Iterator iter = elements.iterator(); iter.hasNext() && n <= sel; n++) {
+                    obj = iter.next();
+                    logger.debug("... elem #"+n+": "+obj);
+                }
+                if (obj != null) {
+                    logger.debug("... Selecting obj: "+obj+" for field "+field.substring(0,p));
+                    extractText(obj,out,field.substring(0,p));
+                }
+            } else {
+                logger.debug("found " + elements.size() + " elements for " + xpath);
+                for (Iterator iter = elements.iterator(); iter.hasNext();) {
+                    Object obj = iter.next();
+                    extractText(obj,out,field);
+                }
             }
         
         }
@@ -348,14 +373,14 @@ public class HtmlParser implements IParser {
      *            should be empty. After return, it contains the readable text
      *            of the html and the outlinks.
      */
-    protected void extractText(final Element e, final ParseOutput out, final String fieldName) {
+    protected void extractAllText(final Element e, final ParseOutput out, final String fieldName) {
         //String nodeName = e.getName();
         if (!(e.getNodeType() == Node.COMMENT_NODE)) {
             int size = e.nodeCount();
             for (int i = 0; i < size; i++) {
                 Node node = e.node(i);                
                 if (node instanceof Element) {
-                    extractText((Element) node, out,fieldName);
+                    extractAllText((Element)node, out, fieldName);
                 } else if (node instanceof Text) {
                     String t = node.getText();
                     out.addFieldString(fieldName,t);
@@ -373,18 +398,30 @@ public class HtmlParser implements IParser {
     }
 
     public static void main(String[] arg) throws Exception {
-        HtmlParser parser = new HtmlParser();
         //parser.test(arg[0],arg[1]);
+        if (arg.length < 3) {
+            System.out.println("HtmlParser <file_name> <var_name> <xpath>");
+            System.exit(0);
+        }
         String str = FileUtil.readFile(new File(arg[0]));
+        String var = arg[1];
+        String xpath = arg[2];
+        Map<String,String> fields = new HashMap<String,String>();
+        fields.put(var,xpath);
+        HtmlParser parser = new HtmlParser(null,null,fields);
         String url = "http://url.com";
         if (arg.length > 1) { url = arg[1]; }
         ParseOutput out = parser.parse(url, str.getBytes("UTF-8"));
         System.out.println("-------------------------------------------");
-        System.out.println("TITLE: "+out.getTitle());
+/*
         for (Pair<String,String> link : out.getLinks()) {
             System.out.println("LINK: "+link.first()+"  ("+link.last()+")");
         }
-        System.out.println("CONTENT: "+out.getText());
+*/
+        int p = var.indexOf(".");
+        if (p >= 0) var = var.substring(0,p);
+        System.out.println(var+": "+out.getField(var));
+//        System.out.println("CONTENT: "+out.getText());
     }
 
 }

@@ -6,34 +6,18 @@
 package com.flaptor.util.parser;
 
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.cyberneko.html.parsers.DOMParser;
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.Node;
-import org.dom4j.Text;
-import org.dom4j.dom.DOMDocumentFactory;
-import org.dom4j.io.DOMReader;
-import org.dom4j.tree.DefaultAttribute;
 
 import com.flaptor.util.Execute;
-import com.flaptor.util.FileUtil;
 import com.flaptor.util.Pair;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * The result of the parser is stored in an object of this class.
@@ -175,6 +159,8 @@ public class ParseOutput {
     			base = base.replace(" ", "%20");
     			try {
     				// Re-encode the query part, to handle partially encoded urls.
+    				query = query.replaceAll("%([^0-9])","%25$1");
+    				query = query.replaceAll("%$","%25");
     				query = java.net.URLEncoder.encode(java.net.URLDecoder.decode(query,"UTF-8"),"UTF-8");
     				query = query.replace("%3D","=").replace("%26","&");
     			} catch (java.io.UnsupportedEncodingException e) {

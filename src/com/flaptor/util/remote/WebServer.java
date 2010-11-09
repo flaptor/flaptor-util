@@ -58,22 +58,34 @@ public class WebServer extends AServer {
 	 */
 	public static void main(final String[] args) {
 		if (args.length != 2) {
-			System.err.println("usage: WebServer [handler class] [port]");
+			System.err.println("\n  Usage: WebServer <handler class> <port>\n     or: WebServer <webapp dir> <port>\n");
 			System.exit(-1);
 		}
 
         Execute.configureLog4j();
 
-		Object handler = null;
-		try {
-			handler = Class.forName(args[0]).newInstance();
-		} catch (Exception e) {
-			System.err.println(e);
+        try {
+            
+    		WebServer server = new WebServer(Integer.parseInt(args[1]));
+            try {
+                Object handler = Class.forName(args[0]).newInstance();
+                server.addHandler("/", (AbstractHandler)handler);
+            } catch (ClassNotFoundException e1) {
+                URL webappPath = Thread.currentThread().getContextClassLoader().getResource(args[0]);
+                if (null == webappPath) {
+                    System.err.println("Can't find webapp directory ["+args[0]+"] in the classpath.");
+                    System.exit(0);
+                }
+                String path = webappPath.getPath();
+                server.addWebAppHandler("/", path);
+            }
+
+            server.start();
+
+        } catch (Exception e2) {
+            logger.error("Instantiating WebServer: ",e2);
 			System.exit(-1);
 		}
-		WebServer server = new WebServer(Integer.parseInt(args[1]));
-		server.addHandler("/", (AbstractHandler)handler);
-		server.start();
 	}
 
 	/**
@@ -197,6 +209,8 @@ public class WebServer extends AServer {
             throw new RuntimeException (e);
 		}
 	}
+
+
 
 }
 
