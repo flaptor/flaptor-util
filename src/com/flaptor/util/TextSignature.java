@@ -30,10 +30,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Serializable;
-import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 public class TextSignature implements Serializable {
 
@@ -91,22 +91,19 @@ public class TextSignature implements Serializable {
     private void build(Reader reader) throws IOException {
         int[] data = new int[HASH_SIZE];
         
-        StreamTokenizer tokenizer = new StreamTokenizer(reader);
+        Scanner scanner = new Scanner(reader).useDelimiter("\\W+");
         List<String> tokens = new LinkedList<String>();
 
-        int windowSize = 4;
+        int windowSize = 2;
         int tail = 1-windowSize;
         int hash = 0;
         boolean hashing = false;
 
 
-        while (tokenizer.nextToken() != StreamTokenizer.TT_EOF) {
-            if (null == tokenizer.sval){
-                // should we consider this?
-                continue;
-            }
-            tokens.add(tokenizer.sval);
-            hash = addWord(hash, tokenizer.sval);
+        while (scanner.hasNext()) {
+            String token = scanner.next();
+            tokens.add(token);
+            hash = addWord(hash, token);
             if (tail == 0) {
                 hashing = true;
             }
