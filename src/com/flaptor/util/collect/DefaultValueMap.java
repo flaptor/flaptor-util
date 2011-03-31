@@ -27,6 +27,7 @@ public abstract class DefaultValueMap<K, V> extends ForwardingMap<K, V> {
 
     private static final long serialVersionUID = 1L;
     private Class<K> keyType;
+    private final Map<K, V> baseMap;
 
     /**
      * Creatas a {@link DefaultValueMap} based on an empty {@link HashMap}
@@ -46,8 +47,14 @@ public abstract class DefaultValueMap<K, V> extends ForwardingMap<K, V> {
      * @param baseMap the backing map
      */
     public DefaultValueMap(Class<K> keyType, Map<K, V> baseMap) {
-        super(baseMap);
+        super();
+        this.baseMap = baseMap; 
         this.keyType = keyType;
+    }
+    
+    @Override
+    protected Map<K, V> delegate() {
+        return baseMap;
     }
     
     @Override

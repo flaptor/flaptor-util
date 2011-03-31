@@ -14,7 +14,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
 import com.flaptor.util.DomUtil;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 /**
  * This class consists exclusively of static methods that can be used
@@ -85,7 +85,7 @@ public class TimePlotUtils {
         DecimalFormat decimalFormat = new DecimalFormat(pattern);
         DateFormat dateFormat = getDateFormat();
         
-        List<Date> dates = Lists.sortedCopy(source.keySet());
+        List<Date> dates = Ordering.natural().sortedCopy(source.keySet());
         
         StringBuffer buffer = new StringBuffer();
         Integer columns = null;
@@ -219,7 +219,6 @@ public class TimePlotUtils {
 
 
     }
-
 
 
 }

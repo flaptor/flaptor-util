@@ -23,19 +23,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import com.google.common.collect.AbstractIterable;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
@@ -185,7 +184,7 @@ public class CollectionsUtil {
     }
 
     public static <T extends Comparable<T>> Iterable<T> mergeIterables(final Iterable<? extends Iterable<? extends T>> iterables) {
-        return mergeIterables(iterables, Comparators.naturalOrder());
+        return mergeIterables(iterables, Ordering.natural());
     }
     
     public static <T> Iterable<T> mergeIterables(final Iterable<? extends Iterable<? extends T>> iterables, final Comparator<? super T> comparator) {
@@ -201,7 +200,7 @@ public class CollectionsUtil {
     }
         
     public static <T extends Comparable<T>> Iterator<T> mergeIterators(Iterator<? extends Iterator<? extends T>> iterators) {
-        return mergeIterators(iterators, Comparators.naturalOrder());
+        return mergeIterators(iterators, Ordering.natural());
     }
     
     public static <T> Iterator<T> mergeIterators(Iterator<? extends Iterator<? extends T>> iterators, final Comparator<? super T> comparator) {
@@ -300,7 +299,7 @@ public class CollectionsUtil {
      * @return a newly created sorted list
      */
     public static <K,V> List<Entry<K,V>> order(Map<K,V> map, java.util.Comparator<Entry<K,V>> comparator) {
-		return Lists.sortedCopy(map.entrySet(), comparator);
+        return Ordering.from(comparator).sortedCopy(map.entrySet());
     }
 
     /**
@@ -450,7 +449,7 @@ public class CollectionsUtil {
     }
 
     public static <T extends Comparable<T>> SortedSet<T> sortTopN(Iterable<T> iterable, int n) {
-    	return sortTopN(iterable, n, Comparators.<T>naturalOrder());
+    	return sortTopN(iterable, n, Ordering.<T>natural());
     	
     }
     public static <T> SortedSet<T> sortTopN(Iterable<T> iterable, int n, Comparator<T> comparator) {
