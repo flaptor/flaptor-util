@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.flaptor</groupId>
+  <artifactId>flaptor-utils</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+
+  <name>${project.artifactId}</name>
+  <description>${project.artifactId}</description>
+  <url>http://indextank.com</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.test.skip>false</maven.test.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.indextank</groupId>
+      <artifactId>hist4j</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId> 
+      <artifactId>commons-logging</artifactId> 
+      <version>1.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId> 
+      <artifactId>commons-codec</artifactId> 
+      <version>1.3</version> 
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId> 
+      <artifactId>commons-httpclient</artifactId> 
+      <version>3.1</version> 
+    </dependency>
+    <dependency>
+      <groupId>dom4j</groupId> 
+      <artifactId>dom4j</artifactId> 
+      <version>1.6.1</version> 
+    </dependency>
+    <dependency>
+      <groupId>org.fontbox</groupId> 
+      <artifactId>fontbox</artifactId> 
+      <version>0.1.0</version> <!-- se necesita la version 0.2.0 -->
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <outputDirectory>target/classes</outputDirectory>
+    <defaultGoal>package</defaultGoal>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>test</directory>
+      </testResource>
+    </testResources>
+    <finalName>${project.artifactId}</finalName>
+
+    <plugins>
+      <!-- m2e bug workaroud -->
+      <plugin>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.8</version>
+        <configuration>
+          <ajdtVersion>none</ajdtVersion>
+          <!-- disable dependency autodiscovery (MECLIPSE-552) -->
+          <useProjectReferences>false</useProjectReferences>
+        </configuration>
+      </plugin>
+
+      <!-- compiler -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+
+  </build>
+</project>
